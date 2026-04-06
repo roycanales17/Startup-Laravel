@@ -138,7 +138,7 @@
     $message = $error ?: ($success ?: $hint);
     $messageClass = filled($error)
         ? 'text-sm text-red-500'
-        : (filled($success) ? 'text-sm text-emerald-500' : 'text-sm text-muted-foreground');
+        : (filled($success) ? 'text-sm text-emerald-500' : 'text-xs text-muted-foreground');
 
     $initialValue = $multiple
         ? (is_array($value) ? array_values($value) : (filled($value) ? [(string) $value] : []))
