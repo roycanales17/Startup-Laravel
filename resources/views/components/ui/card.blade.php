@@ -66,7 +66,7 @@
     };
 
     $interactiveClasses = implode(' ', array_filter([
-        'relative w-full overflow-hidden transition-all duration-200',
+        'relative w-full transition-all duration-200',
         !$disabled && $hoverable ? 'hover:border-foreground/20 hover:shadow-md' : '',
         !$disabled && $clickable && !$collapsible ? 'cursor-pointer active:scale-[0.99]' : '',
         $disabled ? 'pointer-events-none select-none opacity-60' : '',

@@ -33,3 +33,7 @@ Route::get('/ui/cards', function () {
 Route::get('/ui/file-upload', function () {
     return view('components.ui.sections.file-uploads');
 })->name('ui.file-upload');
+
+Route::get('/ui/toast', function () {
+    return view('components.ui.sections.toasts');
+})->name('ui.toast');

@@ -59,6 +59,10 @@
                                     File Upload
                                 </a>
 
+                                <a href="{{ route('ui.toast') }}" class="block rounded-xl px-3 py-2 text-sm hover:bg-muted">
+                                    Toaster
+                                </a>
+
                                 <a href="{{ route('ui.cards') }}" class="block rounded-xl px-3 py-2 text-sm hover:bg-muted">
                                     Cards
                                 </a>
