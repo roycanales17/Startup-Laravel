@@ -8,7 +8,7 @@
             </p>
 
             <div class="mt-6 flex justify-center gap-3">
-                <x-ui.button href="{{ route('ui') }}">
+                <x-ui.button href="{{ route('ui.buttons') }}">
                     Open UI Preview
                 </x-ui.button>
 
