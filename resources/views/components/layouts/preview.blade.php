@@ -66,10 +66,6 @@
                                 <a href="{{ route('ui.cards') }}" class="block rounded-xl px-3 py-2 text-sm hover:bg-muted">
                                     Cards
                                 </a>
-
-                                <a href="#themes" class="block rounded-xl px-3 py-2 text-sm hover:bg-muted">
-                                    Theme
-                                </a>
                             </nav>
                         </div>
                     </div>
