@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+:root {
+    --background: 255 255 255;
+    --foreground: 15 23 42;
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    --border: 226 232 240;
+    --input: 226 232 240;
+
+    /* changed */
+    --primary: 59 130 246;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 241 245 249;
+    --secondary-foreground: 15 23 42;
+    --muted: 248 250 252;
+    --muted-foreground: 100 116 139;
+    --ring: 59 130 246;
+}
+
+.dark {
+    --background: 2 6 23;
+    --foreground: 248 250 252;
+    --card: 15 23 42;
+    --card-foreground: 248 250 252;
+    --border: 51 65 85;
+    --input: 51 65 85;
+
+    /* changed */
+    --primary: 96 165 250;
+    --primary-foreground: 15 23 42;
+
+    --secondary: 30 41 59;
+    --secondary-foreground: 248 250 252;
+    --muted: 15 23 42;
+    --muted-foreground: 148 163 184;
+    --ring: 96 165 250;
+}
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-background: rgb(var(--background));
+    --color-foreground: rgb(var(--foreground));
+    --color-card: rgb(var(--card));
+    --color-card-foreground: rgb(var(--card-foreground));
+    --color-border: rgb(var(--border));
+    --color-input: rgb(var(--input));
+    --color-primary: rgb(var(--primary));
+    --color-primary-foreground: rgb(var(--primary-foreground));
+    --color-secondary: rgb(var(--secondary));
+    --color-secondary-foreground: rgb(var(--secondary-foreground));
+    --color-muted: rgb(var(--muted));
+    --color-muted-foreground: rgb(var(--muted-foreground));
+    --color-ring: rgb(var(--ring));
+}
+
+@layer base {
+    html {
+        font-family: "Instrument Sans", sans-serif;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    * {
+        border-color: rgb(var(--border));
+    }
+}
+
+/* Prism toolbar / copy button tweaks */
+div.code-toolbar {
+    @apply relative;
+}
+
+div.code-toolbar pre {
+    margin: 0 !important;
+}
+
+div.code-toolbar > .toolbar {
+    @apply absolute right-3 top-3 opacity-100;
+}
+
+div.code-toolbar > .toolbar .toolbar-item > button,
+div.code-toolbar > .toolbar .toolbar-item > a,
+div.code-toolbar > .toolbar .toolbar-item > span {
+    @apply rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground shadow-sm;
+}
+
+pre[class*="language-"] {
+    @apply m-0 overflow-x-auto p-5 text-xs leading-7;
+}
+
+code[class*="language-"] {
+    @apply font-mono;
+}
+
+div.code-toolbar > .toolbar {
+    @apply absolute right-4 top-4 opacity-100;
+}
