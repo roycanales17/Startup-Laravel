@@ -57,7 +57,15 @@
         default => 'shadow-sm',
     };
 
-    $paddingClasses = match ($size) {
+    $wrapperPaddingClasses = match ($size) {
+        'xs' => 'px-2.5',
+        'sm' => 'px-3',
+        'lg' => 'px-4',
+        'xl' => 'px-4',
+        default => 'px-3',
+    };
+
+    $multiplePaddingClasses = match ($size) {
         'xs' => 'px-2.5 py-1.5',
         'sm' => 'px-3 py-2',
         'lg' => 'px-4 py-2.5',
@@ -77,22 +85,34 @@
             ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
             : 'focus-within:border-primary focus-within:ring-primary/20');
 
-    $wrapperClasses = implode(' ', [
+    $baseWrapperClasses = implode(' ', [
         'relative w-full border transition-all duration-200',
         $shadowClasses,
         'hover:border-foreground/20',
         'focus-within:ring-4 focus-within:shadow-md',
         'disabled:cursor-not-allowed disabled:opacity-60',
         $sizeClasses,
-        $paddingClasses,
         $variantClasses,
         $stateClasses,
     ]);
 
+    $singleWrapperClasses = implode(' ', [
+        $baseWrapperClasses,
+        'flex items-center',
+        $wrapperPaddingClasses,
+    ]);
+
+    $multipleWrapperClasses = implode(' ', [
+        $baseWrapperClasses,
+        'flex flex-wrap items-center gap-2 cursor-text',
+        $multiplePaddingClasses,
+    ]);
+
     $singleInputClasses = implode(' ', [
-        'w-full bg-transparent outline-none placeholder:text-muted-foreground',
+        'block w-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
         'disabled:cursor-not-allowed disabled:opacity-60',
         'readonly:cursor-default',
+        'h-full min-h-[1.5rem] py-0 leading-normal',
         $hasLeading ? 'pl-7' : '',
         $hasTrailing ? 'pr-7' : '',
     ]);
@@ -288,7 +308,7 @@
     <div class="relative">
         @if($multipleAutocomplete)
             <div
-                class="{{ $wrapperClasses }} flex flex-wrap items-center gap-2 cursor-text"
+                class="{{ $multipleWrapperClasses }}"
                 @click="$refs.input.focus()"
             >
                 @if($prefix)
@@ -358,7 +378,7 @@
                 @endif
             </div>
         @else
-            <div class="{{ $wrapperClasses }}">
+            <div class="{{ $singleWrapperClasses }}">
                 @if($prefix)
                     <div class="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-sm text-muted-foreground">
                         {{ $prefix }}

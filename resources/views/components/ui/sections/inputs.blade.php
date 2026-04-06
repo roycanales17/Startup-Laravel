@@ -10,9 +10,10 @@
         </div>
 
         <!-- Basic -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Basic</h3>
-
+        <x-ui.card
+            title="Basic"
+            description="Standard input usage with optional helper text."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Default"
@@ -26,7 +27,7 @@
                 />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Default"
@@ -39,13 +40,14 @@
                     hint="Helper message here."
                     /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Sizes -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Sizes</h3>
-
+        <x-ui.card
+            title="Sizes"
+            description="Supports extra small to extra large sizes."
+        >
             <div class="space-y-3">
                 <x-ui.input size="xs" placeholder="Extra Small" />
                 <x-ui.input size="sm" placeholder="Small" />
@@ -54,7 +56,7 @@
                 <x-ui.input size="xl" placeholder="Extra Large" />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input size="xs" /&gt;
                     &lt;x-ui.input size="sm" /&gt;
@@ -62,32 +64,34 @@
                     &lt;x-ui.input size="lg" /&gt;
                     &lt;x-ui.input size="xl" /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Variants -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Variants</h3>
-
+        <x-ui.card
+            title="Variants"
+            description="Different visual styles for various UI needs."
+        >
             <div class="space-y-3">
                 <x-ui.input variant="default" placeholder="Default" />
                 <x-ui.input variant="filled" placeholder="Filled" />
                 <x-ui.input variant="ghost" placeholder="Ghost" />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input variant="default" /&gt;
                     &lt;x-ui.input variant="filled" /&gt;
                     &lt;x-ui.input variant="ghost" /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Shadows -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Shadows</h3>
-
+        <x-ui.card
+            title="Shadows"
+            description="Shadow levels for flatter or more elevated input styles."
+        >
             <div class="space-y-3">
                 <x-ui.input shadow="none" placeholder="No shadow" />
                 <x-ui.input shadow="sm" placeholder="Small shadow" />
@@ -96,7 +100,7 @@
                 <x-ui.input shadow="xl" placeholder="Extra large shadow" />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input shadow="none" /&gt;
                     &lt;x-ui.input shadow="sm" /&gt;
@@ -104,13 +108,14 @@
                     &lt;x-ui.input shadow="lg" /&gt;
                     &lt;x-ui.input shadow="xl" /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- States -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">States</h3>
-
+        <x-ui.card
+            title="States"
+            description="Validation and interaction states for different input conditions."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Error"
@@ -135,7 +140,7 @@
                 />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Error"
@@ -159,13 +164,14 @@
                     value="Readonly value"
                     /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Icons / Prefix / Suffix -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Icons / Prefix / Suffix</h3>
-
+        <x-ui.card
+            title="Icons / Prefix / Suffix"
+            description="Supports affixes and icon slots for clearer input context."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="With Prefix"
@@ -200,7 +206,7 @@
                 </x-ui.input>
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="With Prefix"
@@ -234,13 +240,14 @@
                     &lt;/x-slot:trailing&gt;
                     &lt;/x-ui.input&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Extra Features -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Extra Features</h3>
-
+        <x-ui.card
+            title="Extra Features"
+            description="Optional utility features like clearable input and loading state."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Clearable"
@@ -259,7 +266,7 @@
                 </x-ui.input>
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Clearable"
@@ -277,13 +284,14 @@
                     &lt;/x-slot:leading&gt;
                     &lt;/x-ui.input&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Description / Pre-info -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Description / Pre-info</h3>
-
+        <x-ui.card
+            title="Description / Pre-info"
+            description="Helpful supporting text shown below the label before the field."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Email Address"
@@ -299,7 +307,7 @@
                 />
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Email Address"
@@ -314,13 +322,14 @@
                     hint="You can change this later."
                     /&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Autocomplete -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Autocomplete</h3>
-
+        <x-ui.card
+            title="Autocomplete"
+            description="Dropdown suggestions for faster and more guided text entry."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Country"
@@ -328,13 +337,13 @@
                     placeholder="Type country..."
                     autocomplete
                     :suggestions="[
-                    'Philippines',
-                    'Japan',
-                    'Singapore',
-                    'Malaysia',
-                    'Thailand',
-                    'Indonesia',
-                ]"
+                        'Philippines',
+                        'Japan',
+                        'Singapore',
+                        'Malaysia',
+                        'Thailand',
+                        'Indonesia',
+                    ]"
                 >
                     <x-slot:leading>
                         <x-lucide-map-pinned class="h-4 w-4" />
@@ -348,11 +357,11 @@
                     placeholder="Choose category..."
                     autocomplete
                     :suggestions="[
-                    ['label' => 'Web Design', 'value' => 'web-design'],
-                    ['label' => 'Laravel Development', 'value' => 'laravel-development'],
-                    ['label' => 'SEO', 'value' => 'seo'],
-                    ['label' => 'Branding', 'value' => 'branding'],
-                ]"
+                        ['label' => 'Web Design', 'value' => 'web-design'],
+                        ['label' => 'Laravel Development', 'value' => 'laravel-development'],
+                        ['label' => 'SEO', 'value' => 'seo'],
+                        ['label' => 'Branding', 'value' => 'branding'],
+                    ]"
                 >
                     <x-slot:leading>
                         <x-lucide-folder-search class="h-4 w-4" />
@@ -360,7 +369,7 @@
                 </x-ui.input>
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Country"
@@ -399,13 +408,14 @@
                     &lt;/x-slot:leading&gt;
                     &lt;/x-ui.input&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
         <!-- Multi Autocomplete Pills -->
-        <x-ui.card>
-            <h3 class="mb-4 font-medium">Autocomplete Pills / Multi Select</h3>
-
+        <x-ui.card
+            title="Autocomplete Pills / Multi Select"
+            description="Select multiple options as pills within the same input."
+        >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Skills"
@@ -414,14 +424,14 @@
                     placeholder="Type skill..."
                     multipleAutocomplete
                     :suggestions="[
-                    'PHP',
-                    'Laravel',
-                    'Livewire',
-                    'Alpine.js',
-                    'Tailwind CSS',
-                    'MySQL',
-                    'JavaScript',
-                ]"
+                        'PHP',
+                        'Laravel',
+                        'Livewire',
+                        'Alpine.js',
+                        'Tailwind CSS',
+                        'MySQL',
+                        'JavaScript',
+                    ]"
                     hint="You can select more than one."
                 >
                     <x-slot:leading>
@@ -435,13 +445,13 @@
                     placeholder="Choose tags..."
                     multipleAutocomplete
                     :suggestions="[
-                    'Starter Kit',
-                    'Admin',
-                    'Dashboard',
-                    'Livewire',
-                    'Tailwind',
-                    'Autocomplete',
-                ]"
+                        'Starter Kit',
+                        'Admin',
+                        'Dashboard',
+                        'Livewire',
+                        'Tailwind',
+                        'Autocomplete',
+                    ]"
                 >
                     <x-slot:leading>
                         <x-lucide-bookmark-plus class="h-4 w-4" />
@@ -449,7 +459,7 @@
                 </x-ui.input>
             </div>
 
-            <div class="mt-4">
+            <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
                     &lt;x-ui.input
                     label="Skills"
@@ -491,7 +501,7 @@
                     &lt;/x-slot:leading&gt;
                     &lt;/x-ui.input&gt;
                 </x-ui.code-preview>
-            </div>
+            </x-slot:footerSlot>
         </x-ui.card>
 
     </section>

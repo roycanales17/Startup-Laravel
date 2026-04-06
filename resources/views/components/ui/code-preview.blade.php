@@ -15,7 +15,7 @@
         ->implode("\n");
 @endphp
 
-<div class="space-y-2">
+<div class="space-y-2 w-full">
     @if($title)
         <div class="text-sm font-medium text-muted-foreground">
             {{ $title }}
