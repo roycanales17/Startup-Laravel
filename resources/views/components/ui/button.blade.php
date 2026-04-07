@@ -6,24 +6,18 @@
     'label' => null,
     'slim' => false,
     'fullWidth' => false,
-    'loading' => false,
     'loadingText' => 'Loading...',
     'loadingPosition' => 'left',
     'iconPosition' => 'left',
     'iconOnly' => false,
     'tooltip' => null,
     'error' => null,
-    'href' => null,
-    'target' => null,
     'description' => null,
+    'wireTarget' => null,
 ])
 
 @php
-    $tag = $href ? 'a' : 'button';
-    $isLink = !empty($href);
-    $isExternal = $isLink && $target === '_blank';
-
-    $base = 'relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 select-none transition-all duration-200 cursor-pointer';
+    $base = 'cursor-pointer relative inline-flex items-center justify-center select-none font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
     $variants = [
         'primary' => 'bg-primary text-primary-foreground hover:opacity-90',
@@ -33,7 +27,6 @@
         'danger' => 'bg-red-600 text-white hover:bg-red-700',
         'success' => 'bg-emerald-600 text-white hover:bg-emerald-700',
         'soft' => 'bg-muted text-foreground hover:opacity-90',
-        'link' => 'bg-transparent text-primary underline-offset-4 hover:underline shadow-none px-0 h-auto',
     ];
 
     $sizes = [
@@ -51,113 +44,109 @@
         'full' => 'rounded-full',
     ];
 
-    $slimClass = $slim && !$iconOnly && $variant !== 'link'
-        ? match ($size) {
-            'xs' => 'px-2',
-            'sm' => 'px-2.5',
-            'md' => 'px-3',
-            'lg' => 'px-4',
-            'xl' => 'px-5',
-            default => '',
-        }
-        : '';
+    $leftIcon = $leftIcon ?? null;
+    $rightIcon = $rightIcon ?? null;
 
-    $leftIconExists = !empty($leftIcon);
-    $rightIconExists = !empty($rightIcon);
+    $classes = implode(' ', array_filter([
+        $base,
+        $variants[$variant] ?? $variants['primary'],
+        $sizes[$size] ?? $sizes['md'],
+        $radii[$radius] ?? $radii['lg'],
+        $fullWidth ? 'w-full' : null,
+        $error ? 'ring-2 ring-red-500 border-red-500 focus:ring-red-500' : null,
+    ]));
 
-    $buttonLabel = $label ?? trim((string) $slot);
-
-    $cursorClass = match (true) {
-        $loading => 'cursor-wait',
-        (!$isLink && $loading) => 'cursor-not-allowed', // fallback safety
-        ($isLink && $loading) => 'cursor-wait pointer-events-none',
-        (!$isLink && isset($attributes['disabled'])) => 'cursor-not-allowed',
-        default => 'cursor-pointer',
-    };
-
-    $classes = trim(
-        $base . ' ' .
-        ($variants[$variant] ?? $variants['primary']) . ' ' .
-        ($sizes[$size] ?? $sizes['md']) . ' ' .
-        ($variant !== 'link' ? ($radii[$radius] ?? $radii['lg']) : '') . ' ' .
-        $slimClass . ' ' .
-        ($fullWidth ? 'w-full' : '') . ' ' .
-        ($error ? 'ring-2 ring-red-500 border-red-500 focus:ring-red-500' : '') . ' ' .
-        ($loading && $isLink ? 'pointer-events-none opacity-50' : '') . ' ' .
-        $cursorClass
-    );
-
-    $spinner = '
-        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-    ';
+    $wireTargetAttr = filled($wireTarget) ? $wireTarget : $attributes->get('wire:target');
 @endphp
 
 <div class="{{ $fullWidth ? 'w-full' : '' }}">
-    <{{ $tag }}
-        {{ $attributes->merge(['class' => $classes]) }}
-        @if($isLink) href="{{ $href }}" @endif
-        @if($target) target="{{ $target }}" @endif
-        @if($isExternal) rel="noopener noreferrer" @endif
-        @if(!$isLink) type="{{ $type }}" @endif
-        @if(!$isLink && $loading) disabled @endif
-        @if($isLink && $loading) onclick="return false;" @endif
+    <button
+        type="{{ $type }}"
+        {{ $attributes->except(['wireTarget'])->class([$classes]) }}
         @if($tooltip) title="{{ $tooltip }}" @endif
-        @if(!$isLink) aria-busy="{{ $loading ? 'true' : 'false' }}" @endif
-         aria-disabled="{{ $loading ? 'true' : 'false' }}"
+        @if($wireTargetAttr)
+            wire:loading.attr="disabled"
+        wire:target="{{ $wireTargetAttr }}"
+        wire:loading.class="cursor-wait opacity-90"
+        @else
+            wire:loading.attr="disabled"
+        wire:loading.class="cursor-wait opacity-90"
+        @endif
     >
-    <span class="inline-flex items-center justify-center gap-2">
-            @if($loading && $loadingPosition === 'left')
-            {!! $spinner !!}
-        @endif
+        <span class="inline-flex items-center justify-center gap-2">
+            @if($loadingPosition === 'left')
+                <span
+                    wire:loading.inline-flex
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="hidden items-center justify-center shrink-0"
+                >
+                    <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
+                </span>
+            @endif
 
-        @if(!$loading && !$iconOnly && $leftIconExists && $iconPosition === 'left')
-            <span class="inline-flex items-center">
-                {{ $leftIcon }}
-            </span>
-        @endif
-
-        @if($iconOnly)
-            @if($leftIconExists)
-                <span class="inline-flex items-center justify-center">
+            @if(!$iconOnly && isset($leftIcon) && $iconPosition === 'left')
+                <span
+                    wire:loading.remove
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="inline-flex items-center shrink-0"
+                >
                     {{ $leftIcon }}
                 </span>
-            @elseif($rightIconExists)
-                <span class="inline-flex items-center justify-center">
+            @endif
+
+            @if($iconOnly)
+                <span
+                    wire:loading.remove
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="inline-flex items-center justify-center shrink-0"
+                >
+                    {{ $leftIcon ?? $rightIcon }}
+                </span>
+            @else
+                <span
+                    wire:loading.remove
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="inline-flex items-center"
+                >
+                    {{ $label ?? $slot }}
+                </span>
+
+                <span
+                    wire:loading.inline-flex
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="hidden items-center"
+                >
+                    {{ $loadingText }}
+                </span>
+            @endif
+
+            @if(!$iconOnly && isset($rightIcon) && $iconPosition === 'right')
+                <span
+                    wire:loading.remove
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="inline-flex items-center shrink-0"
+                >
                     {{ $rightIcon }}
                 </span>
             @endif
-        @else
-            <span>
-                {{ $loading ? $loadingText : $buttonLabel }}
-            </span>
-        @endif
 
-        @if(!$loading && !$iconOnly && $rightIconExists && $iconPosition === 'right')
-            <span class="inline-flex items-center">
-                {{ $rightIcon }}
-            </span>
-        @endif
-
-        @if($loading && $loadingPosition === 'right')
-            {!! $spinner !!}
-        @endif
+            @if($loadingPosition === 'right')
+                <span
+                    wire:loading.inline-flex
+                    @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                    class="hidden items-center justify-center shrink-0"
+                >
+                    <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
+                </span>
+            @endif
         </span>
-</{{ $tag }}>
+    </button>
 
-    {{-- Description / Hint --}}
     @if($description && !$error)
-        <p class="mt-1 text-xs text-muted-foreground">
-            {{ $description }}
-        </p>
+        <p class="mt-1 text-xs text-muted-foreground">{{ $description }}</p>
     @endif
 
-    {{-- Error (takes priority) --}}
     @if($error)
-        <p class="mt-1 text-xs text-red-600">
-            {{ $error }}
-        </p>
+        <p class="mt-1 text-xs text-red-600">{{ $error }}</p>
     @endif
 </div>

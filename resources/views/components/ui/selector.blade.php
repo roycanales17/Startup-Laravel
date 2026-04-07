@@ -50,47 +50,47 @@
     $hasMessage = filled($error) || filled($success) || filled($hint);
 
     $sizeMap = [
-        'xs' => [
-            'trigger' => 'min-h-8 px-2.5 py-1.5 text-xs rounded-lg gap-2',
-            'icon' => 'h-3.5 w-3.5',
-            'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
-            'search' => 'px-2.5 py-2 text-xs',
-            'option' => 'px-2.5 py-2 text-xs rounded-md',
-            'panel' => 'p-2',
-        ],
-        'sm' => [
-            'trigger' => 'min-h-9 px-3 py-2 text-sm rounded-lg gap-2',
-            'icon' => 'h-4 w-4',
-            'pill' => 'h-6 px-2 text-[11px] rounded-md',
-            'search' => 'px-3 py-2 text-sm',
-            'option' => 'px-3 py-2 text-sm rounded-md',
-            'panel' => 'p-2',
-        ],
-        'md' => [
-            'trigger' => 'min-h-10 px-3.5 py-2.5 text-sm rounded-xl gap-2.5',
-            'icon' => 'h-4 w-4',
-            'pill' => 'h-6 px-2 text-xs rounded-md',
-            'search' => 'px-3.5 py-2.5 text-sm',
-            'option' => 'px-3.5 py-2.5 text-sm rounded-lg',
-            'panel' => 'p-2',
-        ],
-        'lg' => [
-            'trigger' => 'min-h-11 px-4 py-3 text-base rounded-xl gap-2.5',
-            'icon' => 'h-5 w-5',
-            'pill' => 'h-7 px-2.5 text-xs rounded-md',
-            'search' => 'px-4 py-3 text-base',
-            'option' => 'px-4 py-3 text-base rounded-lg',
-            'panel' => 'p-2.5',
-        ],
-        'xl' => [
-            'trigger' => 'min-h-12 px-4.5 py-3.5 text-base rounded-2xl gap-3',
-            'icon' => 'h-5 w-5',
-            'pill' => 'h-8 px-3 text-sm rounded-lg',
-            'search' => 'px-4.5 py-3 text-base',
-            'option' => 'px-4.5 py-3 text-base rounded-xl',
-            'panel' => 'p-3',
-        ],
-    ];
+    'xs' => [
+        'trigger' => 'min-h-8 px-2.5 text-xs rounded-lg gap-2',
+        'icon' => 'h-3.5 w-3.5',
+        'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
+        'search' => 'px-2.5 py-2 text-xs',
+        'option' => 'px-2.5 py-2 text-xs rounded-md',
+        'panel' => 'p-2',
+    ],
+    'sm' => [
+        'trigger' => 'min-h-9 px-3 text-sm rounded-lg gap-2',
+        'icon' => 'h-4 w-4',
+        'pill' => 'h-6 px-2 text-[11px] rounded-md',
+        'search' => 'px-3 py-2 text-sm',
+        'option' => 'px-3 py-2 text-sm rounded-md',
+        'panel' => 'p-2',
+    ],
+    'md' => [
+        'trigger' => 'min-h-10 px-3 text-sm rounded-xl gap-2.5',
+        'icon' => 'h-4 w-4',
+        'pill' => 'h-6 px-2 text-xs rounded-md',
+        'search' => 'px-3 py-2 text-sm',
+        'option' => 'px-3 py-2 text-sm rounded-lg',
+        'panel' => 'p-2',
+    ],
+    'lg' => [
+        'trigger' => 'min-h-11 px-4 text-base rounded-2xl gap-2.5',
+        'icon' => 'h-5 w-5',
+        'pill' => 'h-7 px-2.5 text-xs rounded-md',
+        'search' => 'px-4 py-2.5 text-base',
+        'option' => 'px-4 py-2.5 text-base rounded-lg',
+        'panel' => 'p-2.5',
+    ],
+    'xl' => [
+        'trigger' => 'min-h-12 px-4 text-lg rounded-2xl gap-3',
+        'icon' => 'h-5 w-5',
+        'pill' => 'h-8 px-3 text-sm rounded-lg',
+        'search' => 'px-4 py-3 text-lg',
+        'option' => 'px-4 py-3 text-lg rounded-xl',
+        'panel' => 'p-3',
+    ],
+];
 
     $variantMap = [
         'default' => 'bg-background border-border',
@@ -369,7 +369,7 @@
                 @endisset
 
                 @if($loading)
-                        <x-lucide-loader-2 class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 animate-spin text-muted-foreground" />
+                    <x-lucide-loader-2 class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 animate-spin text-muted-foreground" />
                 @elseif($clearable)
                     <button
                         type="button"

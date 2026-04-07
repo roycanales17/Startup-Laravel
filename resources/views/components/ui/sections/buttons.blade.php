@@ -1,7 +1,6 @@
 <x-layouts.preview>
     <section class="space-y-6">
 
-        <!-- Title -->
         <div>
             <h2 class="text-xl font-semibold">Buttons</h2>
             <p class="text-sm text-muted-foreground">
@@ -9,7 +8,6 @@
             </p>
         </div>
 
-        <!-- Variants -->
         <x-ui.card
             title="Variants"
             description="Different visual button styles for common UI actions."
@@ -23,7 +21,6 @@
                 <x-ui.button variant="danger">Danger</x-ui.button>
                 <x-ui.button variant="success">Success</x-ui.button>
                 <x-ui.button variant="soft">Soft</x-ui.button>
-                <x-ui.button variant="link">Link</x-ui.button>
             </div>
 
             <x-slot:footerSlot>
@@ -35,12 +32,10 @@
                     &lt;x-ui.button variant="danger"&gt;Danger&lt;/x-ui.button&gt;
                     &lt;x-ui.button variant="success"&gt;Success&lt;/x-ui.button&gt;
                     &lt;x-ui.button variant="soft"&gt;Soft&lt;/x-ui.button&gt;
-                    &lt;x-ui.button variant="link"&gt;Link&lt;/x-ui.button&gt;
                 </x-ui.code-preview>
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- Sizes -->
         <x-ui.card
             title="Sizes"
             description="Supports extra small to extra large button sizes."
@@ -65,7 +60,6 @@
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- Radius -->
         <x-ui.card
             title="Radius"
             description="Adjust the corner roundness for different button shapes."
@@ -88,17 +82,14 @@
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- States -->
         <x-ui.card
             title="States"
-            description="Examples of loading, slim, full width, and disabled button states."
+            description="Examples of slim, full width, disabled, and Livewire loading button states."
             footerBordered
         >
             <div class="flex flex-wrap gap-3">
-                <x-ui.button :loading="true" loadingText="Saving...">Save</x-ui.button>
-                <x-ui.button :loading="true" loadingPosition="right">Submit</x-ui.button>
                 <x-ui.button :slim="true">Slim</x-ui.button>
-                <x-ui.button :full-width="true" class="sm:w-auto">Full Width</x-ui.button>
+                <x-ui.button fullWidth class="sm:w-auto">Full Width</x-ui.button>
                 <x-ui.button disabled>Disabled</x-ui.button>
                 <x-ui.button variant="secondary" disabled>Disabled Secondary</x-ui.button>
                 <x-ui.button variant="outline" disabled>Disabled Outline</x-ui.button>
@@ -113,10 +104,8 @@
 
             <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
-                    &lt;x-ui.button :loading="true" loadingText="Saving..."&gt;Save&lt;/x-ui.button&gt;
-                    &lt;x-ui.button :loading="true" loadingPosition="right"&gt;Submit&lt;/x-ui.button&gt;
                     &lt;x-ui.button :slim="true"&gt;Slim&lt;/x-ui.button&gt;
-                    &lt;x-ui.button :full-width="true"&gt;Full Width&lt;/x-ui.button&gt;
+                    &lt;x-ui.button fullWidth class="sm:w-auto"&gt;Full Width&lt;/x-ui.button&gt;
                     &lt;x-ui.button disabled&gt;Disabled&lt;/x-ui.button&gt;
                     &lt;x-ui.button variant="secondary" disabled&gt;Disabled Secondary&lt;/x-ui.button&gt;
                     &lt;x-ui.button variant="outline" disabled&gt;Disabled Outline&lt;/x-ui.button&gt;
@@ -131,14 +120,13 @@
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- Icons -->
         <x-ui.card
             title="Icons"
             description="Support for icon-only buttons and buttons with left or right icons."
             footerBordered
         >
             <div class="flex flex-wrap gap-3">
-                <x-ui.button :icon-only="true" tooltip="Search">
+                <x-ui.button :iconOnly="true" tooltip="Search">
                     <x-slot:leftIcon>
                         <x-lucide-search class="h-4 w-4" />
                     </x-slot:leftIcon>
@@ -154,7 +142,7 @@
 
             <x-slot:footerSlot>
                 <x-ui.code-preview language="markup">
-                    &lt;x-ui.button :icon-only="true" tooltip="Search"&gt;
+                    &lt;x-ui.button :iconOnly="true" tooltip="Search"&gt;
                     &lt;x-slot:leftIcon&gt;
                     &lt;x-lucide-search class="h-4 w-4" /&gt;
                     &lt;/x-slot:leftIcon&gt;
@@ -170,7 +158,6 @@
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- Description -->
         <x-ui.card
             title="Description"
             description="Buttons can show supporting text below the main label."
@@ -179,10 +166,6 @@
             <div class="flex max-w-sm flex-col gap-4">
                 <x-ui.button description="This will save your changes">
                     Save Changes
-                </x-ui.button>
-
-                <x-ui.button :loading="true" description="Processing your request...">
-                    Submit
                 </x-ui.button>
 
                 <x-ui.button description="Continue to the next step">
@@ -203,10 +186,6 @@
                     Save Changes
                     &lt;/x-ui.button&gt;
 
-                    &lt;x-ui.button :loading="true" description="Processing your request..."&gt;
-                    Submit
-                    &lt;/x-ui.button&gt;
-
                     &lt;x-ui.button description="Continue to the next step"&gt;
                     &lt;x-slot:leftIcon&gt;
                     &lt;x-lucide-arrow-right class="h-4 w-4" /&gt;
@@ -221,7 +200,6 @@
             </x-slot:footerSlot>
         </x-ui.card>
 
-        <!-- Error -->
         <x-ui.card
             title="Error"
             description="Display an error message below the button when needed."

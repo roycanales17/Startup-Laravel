@@ -5,7 +5,7 @@
 
     'variant' => 'default',
     'size' => 'md',
-    'shadow' => 'sm', // none | sm | md | lg | xl
+    'shadow' => 'sm',
 
     'hint' => null,
     'error' => null,
@@ -16,19 +16,19 @@
 
     'loading' => false,
     'clearable' => false,
+    'togglePassword' => false,
 
     'required' => false,
     'disabled' => false,
     'readonly' => false,
     'description' => null,
 
-    /**
-     * Autocomplete features
-     */
     'suggestions' => [],
     'autocomplete' => false,
     'multipleAutocomplete' => false,
     'emptyText' => 'No results found.',
+
+    'wireTarget' => null,
 ])
 
 @php
@@ -37,8 +37,11 @@
     $hasError = filled($error);
     $hasSuccess = filled($success) && ! $hasError;
 
-    $hasLeading = isset($leading) || filled($prefix) || $loading;
-    $hasTrailing = isset($trailing) || filled($suffix) || $clearable;
+    $type = $attributes->get('type', 'text');
+    $isPassword = $type === 'password';
+
+    $hasLeading = isset($leading) || filled($prefix);
+    $hasTrailing = isset($trailing) || filled($suffix) || $clearable || ($isPassword && $togglePassword);
 
     $sizeClasses = match ($size) {
         'xs' => 'min-h-8 text-xs rounded-lg',
@@ -130,6 +133,8 @@
             'value' => (string) $item,
         ];
     })->values()->all();
+
+    $wireTargetAttr = filled($wireTarget) ? $wireTarget : $attributes->get('wire:target');
 @endphp
 
 <div
@@ -139,6 +144,7 @@
         highlightedIndex: -1,
         search: '',
         selectedItems: [],
+        showPassword: false,
         suggestions: {{ \Illuminate\Support\Js::from($normalizedSuggestions) }},
         autocompleteEnabled: {{ $autocomplete ? 'true' : 'false' }},
         multipleEnabled: {{ $multipleAutocomplete ? 'true' : 'false' }},
@@ -182,6 +188,14 @@
                 && !this.readonly;
         },
 
+        get hasValue() {
+            if (this.multipleEnabled) {
+                return this.selectedItems.length > 0 || !!(this.search && this.search.length);
+            }
+
+            return !!(this.search && this.search.length);
+        },
+
         onInput(event) {
             this.search = event.target.value;
             this.highlightedIndex = this.filteredSuggestions.length ? 0 : -1;
@@ -192,6 +206,8 @@
         },
 
         selectItem(item) {
+            if (this.disabled || this.readonly) return;
+
             if (this.multipleEnabled) {
                 if (!this.selectedItems.some(selected => selected.value === item.value)) {
                     this.selectedItems.push(item);
@@ -201,6 +217,8 @@
                 this.$refs.input.value = '';
                 this.open = false;
                 this.highlightedIndex = -1;
+                this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+                this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
                 this.$refs.input.focus();
                 return;
             }
@@ -215,17 +233,25 @@
         },
 
         removeItem(index) {
+            if (this.disabled || this.readonly) return;
+
             this.selectedItems.splice(index, 1);
+            this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+            this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
             this.$nextTick(() => this.$refs.input.focus());
         },
 
         onFocus() {
+            if (this.disabled || this.readonly) return;
+
             if (this.autocompleteEnabled || this.multipleEnabled) {
                 this.open = true;
             }
         },
 
         onKeydown(event) {
+            if (this.disabled || this.readonly) return;
+
             if (!this.shouldShowDropdown) {
                 if (event.key === 'ArrowDown' && this.filteredSuggestions.length) {
                     this.open = true;
@@ -234,6 +260,8 @@
 
                 if (this.multipleEnabled && event.key === 'Backspace' && !this.search && this.selectedItems.length) {
                     this.selectedItems.pop();
+                    this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+                    this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
                 }
 
                 return;
@@ -267,14 +295,22 @@
 
             if (this.multipleEnabled && event.key === 'Backspace' && !this.search && this.selectedItems.length) {
                 this.selectedItems.pop();
+                this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+                this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
             }
         },
 
         clearInput() {
+            if (this.disabled || this.readonly) return;
+
+            this.showPassword = false;
+
             if (this.multipleEnabled) {
                 this.selectedItems = [];
                 this.search = '';
                 this.$refs.input.value = '';
+                this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
+                this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
                 this.$refs.input.focus();
                 return;
             }
@@ -284,7 +320,7 @@
             this.$refs.input.dispatchEvent(new Event('input', { bubbles: true }));
             this.$refs.input.dispatchEvent(new Event('change', { bubbles: true }));
             this.$refs.input.focus();
-        },
+        }
     }"
     @click.away="open = false"
 >
@@ -309,15 +345,15 @@
         @if($multipleAutocomplete)
             <div
                 class="{{ $multipleWrapperClasses }}"
+                @if($wireTargetAttr)
+                    wire:loading.class="opacity-70 pointer-events-none"
+                wire:target="{{ $wireTargetAttr }}"
+                @endif
                 @click="$refs.input.focus()"
             >
                 @if($prefix)
                     <span class="shrink-0 text-sm text-muted-foreground">
                         {{ $prefix }}
-                    </span>
-                @elseif($loading)
-                    <span class="shrink-0 text-muted-foreground">
-                        <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
                     </span>
                 @elseif(isset($leading))
                     <span class="shrink-0 text-muted-foreground">
@@ -330,8 +366,9 @@
                         <span class="truncate" x-text="item.label"></span>
                         <button
                             type="button"
-                            class="shrink-0 text-muted-foreground transition hover:text-foreground"
+                            class="shrink-0 text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                             @click.stop="removeItem(index)"
+                            :disabled="disabled || readonly"
                         >
                             <x-lucide-x class="h-3.5 w-3.5" />
                         </button>
@@ -351,6 +388,10 @@
                     autocomplete="off"
                     placeholder="{{ $attributes->get('placeholder') }}"
                     class="min-w-[120px] flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    @if($wireTargetAttr)
+                        wire:loading.attr="disabled"
+                    wire:target="{{ $wireTargetAttr }}"
+                    @endif
                 />
 
                 @if($name)
@@ -365,9 +406,16 @@
                     </span>
                 @elseif($clearable)
                     <button
+                        x-show="hasValue && !disabled && !readonly"
+                        x-cloak
                         type="button"
-                        @click.stop="clearInput()"
-                        class="shrink-0 text-muted-foreground transition hover:text-foreground"
+                        @click.stop="if (!disabled && !readonly) clearInput()"
+                        :disabled="disabled || readonly"
+                        @if($wireTargetAttr)
+                            wire:loading.remove
+                        wire:target="{{ $wireTargetAttr }}"
+                        @endif
+                        class="shrink-0 text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
                         <x-lucide-x class="h-4 w-4" />
                     </button>
@@ -378,16 +426,18 @@
                 @endif
             </div>
         @else
-            <div class="{{ $singleWrapperClasses }}">
+            <div
+                class="{{ $singleWrapperClasses }}"
+                @if($wireTargetAttr)
+                    wire:loading.class="opacity-70"
+                wire:target="{{ $wireTargetAttr }}"
+                @endif
+            >
                 @if($prefix)
                     <div class="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-sm text-muted-foreground">
                         {{ $prefix }}
                     </div>
-                @elseif($loading)
-                    <div class="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground">
-                        <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
-                    </div>
-                @elseif (isset($leading))
+                @elseif(isset($leading))
                     <div class="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground">
                         {{ $leading }}
                     </div>
@@ -397,6 +447,8 @@
                     x-ref="input"
                     id="{{ $inputId }}"
                     @if($name) name="{{ $name }}" @endif
+                    type="{{ $type }}"
+                    x-bind:type="(showPassword && {{ $isPassword && $togglePassword ? 'true' : 'false' }}) ? 'text' : '{{ $type }}'"
                     @if($required) required @endif
                     @if($disabled) disabled @endif
                     @if($readonly) readonly @endif
@@ -405,22 +457,49 @@
                     @focus="onFocus()"
                     @keydown="onKeydown($event)"
                     autocomplete="off"
-                    {{ $attributes->merge(['class' => $singleInputClasses]) }}
+                    {{ $attributes->except(['wireTarget', 'type'])->merge(['class' => $singleInputClasses]) }}
+                    @if($wireTargetAttr)
+                        wire:loading.attr="disabled"
+                    wire:target="{{ $wireTargetAttr }}"
+                    @endif
                 />
 
                 @if($suffix)
                     <div class="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-sm text-muted-foreground">
                         {{ $suffix }}
                     </div>
+                @elseif($isPassword && $togglePassword)
+                    <button
+                        x-show="hasValue && !disabled && !readonly"
+                        x-cloak
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        :disabled="disabled || readonly"
+                        @if($wireTargetAttr)
+                            wire:loading.remove
+                        wire:target="{{ $wireTargetAttr }}"
+                        @endif
+                        class="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                    >
+                        <x-lucide-eye x-show="!showPassword" x-cloak class="h-4 w-4" />
+                        <x-lucide-eye-off x-show="showPassword" x-cloak class="h-4 w-4" />
+                    </button>
                 @elseif($clearable)
                     <button
+                        x-show="hasValue && !disabled && !readonly"
+                        x-cloak
                         type="button"
-                        @click="clearInput()"
-                        class="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                        @click="if (!disabled && !readonly) clearInput()"
+                        :disabled="disabled || readonly"
+                        @if($wireTargetAttr)
+                            wire:loading.remove
+                        wire:target="{{ $wireTargetAttr }}"
+                        @endif
+                        class="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
                         <x-lucide-x class="h-4 w-4" />
                     </button>
-                @elseif (isset($trailing))
+                @elseif(isset($trailing))
                     <div class="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground">
                         {{ $trailing }}
                     </div>

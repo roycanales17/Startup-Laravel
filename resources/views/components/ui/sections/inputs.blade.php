@@ -5,7 +5,7 @@
         <div>
             <h2 class="text-xl font-semibold">Inputs</h2>
             <p class="text-sm text-muted-foreground">
-                Fully customizable input fields with variants, sizes, icons, states, descriptions, shadows, and autocomplete features.
+                Fully customizable input fields with variants, sizes, icons, states, descriptions, shadows, autocomplete, clearable fields, password visibility toggle, and scoped Livewire disabling.
             </p>
         </div>
 
@@ -246,22 +246,25 @@
         <!-- Extra Features -->
         <x-ui.card
             title="Extra Features"
-            description="Optional utility features like clearable input and loading state."
+            description="Optional utility features like clearable inputs and password visibility toggle."
         >
             <div class="grid gap-4 md:grid-cols-2">
                 <x-ui.input
                     label="Clearable"
                     placeholder="Try typing..."
+                    description="Shows a clear button once the user starts typing."
                     clearable
                 />
 
                 <x-ui.input
-                    label="Loading"
-                    placeholder="Loading..."
-                    loading
+                    label="Password Toggle"
+                    type="password"
+                    placeholder="Enter your password"
+                    description="Shows a visibility toggle once the user starts typing."
+                    togglePassword
                 >
                     <x-slot:leading>
-                        <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
+                        <x-lucide-lock class="h-4 w-4" />
                     </x-slot:leading>
                 </x-ui.input>
             </div>
@@ -275,12 +278,13 @@
                     /&gt;
 
                     &lt;x-ui.input
-                    label="Loading"
-                    placeholder="Loading..."
-                    loading
+                    label="Password Toggle"
+                    type="password"
+                    placeholder="Enter your password"
+                    togglePassword
                     &gt;
                     &lt;x-slot:leading&gt;
-                    &lt;x-lucide-loader-2 class="h-4 w-4 animate-spin" /&gt;
+                    &lt;x-lucide-lock class="h-4 w-4" /&gt;
                     &lt;/x-slot:leading&gt;
                     &lt;/x-ui.input&gt;
                 </x-ui.code-preview>
@@ -320,6 +324,66 @@
                     description="Choose a short and recognizable name for your project."
                     placeholder="My Admin Dashboard"
                     hint="You can change this later."
+                    /&gt;
+                </x-ui.code-preview>
+            </x-slot:footerSlot>
+        </x-ui.card>
+
+        <!-- Livewire -->
+        <x-ui.card
+            title="Livewire Scoped Disable"
+            description="Disable an input only for a specific Livewire action using wireTarget."
+        >
+            <div class="grid gap-4 md:grid-cols-2">
+                <form wire:submit.prevent="save" class="space-y-4">
+                    <x-ui.input
+                        label="Username"
+                        name="username"
+                        wire:model.defer="username"
+                        wireTarget="save"
+                        placeholder="Enter username"
+                        clearable
+                    >
+                        <x-slot:leading>
+                            <x-lucide-user class="h-4 w-4" />
+                        </x-slot:leading>
+                    </x-ui.input>
+
+                    <x-ui.button type="submit" wireTarget="save">
+                        Save
+                    </x-ui.button>
+                </form>
+
+                <x-ui.input
+                    label="Unrelated Input"
+                    placeholder="This stays interactive"
+                />
+            </div>
+
+            <x-slot:footerSlot>
+                <x-ui.code-preview language="markup">
+                    &lt;form wire:submit.prevent="save" class="space-y-4"&gt;
+                    &lt;x-ui.input
+                    label="Username"
+                    name="username"
+                    wire:model.defer="username"
+                    wireTarget="save"
+                    placeholder="Enter username"
+                    clearable
+                    &gt;
+                    &lt;x-slot:leading&gt;
+                    &lt;x-lucide-user class="h-4 w-4" /&gt;
+                    &lt;/x-slot:leading&gt;
+                    &lt;/x-ui.input&gt;
+
+                    &lt;x-ui.button type="submit" wireTarget="save"&gt;
+                    Save
+                    &lt;/x-ui.button&gt;
+                    &lt;/form&gt;
+
+                    &lt;x-ui.input
+                    label="Unrelated Input"
+                    placeholder="This stays interactive"
                     /&gt;
                 </x-ui.code-preview>
             </x-slot:footerSlot>
