@@ -14,10 +14,19 @@
     'error' => null,
     'description' => null,
     'wireTarget' => null,
+    'badge' => null,
+    'badgeVariant' => 'default',
 ])
 
 @php
     $base = 'cursor-pointer relative inline-flex items-center justify-center select-none font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+
+    $badgeVariants = [
+        'default' => 'bg-slate-500/15 text-slate-300 border-slate-400/20',
+        'amber' => 'bg-amber-500/15 text-amber-300 border-amber-400/20',
+        'rose' => 'bg-rose-500/15 text-rose-300 border-rose-400/20',
+        'success' => 'bg-emerald-500/15 text-emerald-300 border-emerald-400/20',
+    ];
 
     $variants = [
         'primary' => 'bg-primary text-primary-foreground hover:opacity-90',
@@ -73,7 +82,10 @@
         wire:loading.class="cursor-wait opacity-90"
         @endif
     >
-        <span class="inline-flex items-center justify-center gap-2">
+        <span @class([
+            'inline-flex items-center justify-center' => $iconOnly,
+            'flex w-full items-center gap-2' => !$iconOnly,
+        ])>
             @if($loadingPosition === 'left')
                 <span
                     wire:loading.inline-flex
@@ -106,7 +118,7 @@
                 <span
                     wire:loading.remove
                     @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
-                    class="inline-flex items-center"
+                    class="inline-flex min-w-0 flex-1 items-center"
                 >
                     {{ $label ?? $slot }}
                 </span>
@@ -114,10 +126,20 @@
                 <span
                     wire:loading.inline-flex
                     @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
-                    class="hidden items-center"
+                    class="hidden min-w-0 flex-1 items-center"
                 >
                     {{ $loadingText }}
                 </span>
+
+                @if(filled($badge))
+                    <span
+                        wire:loading.remove
+                        @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
+                        class="ml-auto inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-medium {{ $badgeVariants[$badgeVariant] ?? $badgeVariants['default'] }}"
+                    >
+                        {{ $badge }}
+                    </span>
+                @endif
             @endif
 
             @if(!$iconOnly && isset($rightIcon) && $iconPosition === 'right')
