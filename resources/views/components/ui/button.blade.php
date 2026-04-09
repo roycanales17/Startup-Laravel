@@ -16,6 +16,7 @@
     'wireTarget' => null,
     'badge' => null,
     'badgeVariant' => 'default',
+    'center' => false,
 ])
 
 @php
@@ -84,7 +85,12 @@
     >
         <span @class([
             'inline-flex items-center justify-center' => $iconOnly,
-            'flex w-full items-center gap-2' => !$iconOnly,
+
+            // normal behavior
+            'flex w-full items-center gap-2 justify-start' => !$iconOnly && !$center,
+
+            // centered behavior
+            'flex w-full items-center gap-2 justify-center' => !$iconOnly && $center,
         ])>
             @if($loadingPosition === 'left')
                 <span
@@ -118,7 +124,7 @@
                 <span
                     wire:loading.remove
                     @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
-                    class="inline-flex min-w-0 flex-1 items-center"
+                    class="{{ $center ? 'inline-flex items-center' : 'inline-flex min-w-0 flex-1 items-center' }}"
                 >
                     {{ $label ?? $slot }}
                 </span>
@@ -126,7 +132,9 @@
                 <span
                     wire:loading.inline-flex
                     @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
-                    class="hidden min-w-0 flex-1 items-center"
+                    class="{{ $center
+                        ? 'hidden inline-flex items-center justify-center gap-2'
+                        : 'hidden min-w-0 flex-1 items-center' }}"
                 >
                     {{ $loadingText }}
                 </span>
@@ -156,7 +164,9 @@
                 <span
                     wire:loading.inline-flex
                     @if($wireTargetAttr) wire:target="{{ $wireTargetAttr }}" @endif
-                    class="hidden items-center justify-center shrink-0"
+                    class="{{ $center
+                        ? 'hidden inline-flex items-center justify-center gap-2 shrink-0'
+                        : 'hidden items-center justify-center shrink-0' }}"
                 >
                     <x-lucide-loader-2 class="h-4 w-4 animate-spin" />
                 </span>

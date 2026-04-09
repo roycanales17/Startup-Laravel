@@ -3,7 +3,7 @@
     'name' => null,
     'id' => null,
 
-    'variant' => 'default', // default, filled, ghost
+    'variant' => 'primary', // primary, secondary, filled, ghost
     'size' => 'md',         // xs, sm, md, lg, xl
     'shadow' => 'none',     // none, sm, md, lg, xl
 
@@ -50,53 +50,62 @@
     $hasMessage = filled($error) || filled($success) || filled($hint);
 
     $sizeMap = [
-    'xs' => [
-        'trigger' => 'min-h-8 px-2.5 text-xs rounded-lg gap-2',
-        'icon' => 'h-3.5 w-3.5',
-        'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
-        'search' => 'px-2.5 py-2 text-xs',
-        'option' => 'px-2.5 py-2 text-xs rounded-md',
-        'panel' => 'p-2',
-    ],
-    'sm' => [
-        'trigger' => 'min-h-9 px-3 text-sm rounded-lg gap-2',
-        'icon' => 'h-4 w-4',
-        'pill' => 'h-6 px-2 text-[11px] rounded-md',
-        'search' => 'px-3 py-2 text-sm',
-        'option' => 'px-3 py-2 text-sm rounded-md',
-        'panel' => 'p-2',
-    ],
-    'md' => [
-        'trigger' => 'min-h-10 px-3 text-sm rounded-xl gap-2.5',
-        'icon' => 'h-4 w-4',
-        'pill' => 'h-6 px-2 text-xs rounded-md',
-        'search' => 'px-3 py-2 text-sm',
-        'option' => 'px-3 py-2 text-sm rounded-lg',
-        'panel' => 'p-2',
-    ],
-    'lg' => [
-        'trigger' => 'min-h-11 px-4 text-base rounded-2xl gap-2.5',
-        'icon' => 'h-5 w-5',
-        'pill' => 'h-7 px-2.5 text-xs rounded-md',
-        'search' => 'px-4 py-2.5 text-base',
-        'option' => 'px-4 py-2.5 text-base rounded-lg',
-        'panel' => 'p-2.5',
-    ],
-    'xl' => [
-        'trigger' => 'min-h-12 px-4 text-lg rounded-2xl gap-3',
-        'icon' => 'h-5 w-5',
-        'pill' => 'h-8 px-3 text-sm rounded-lg',
-        'search' => 'px-4 py-3 text-lg',
-        'option' => 'px-4 py-3 text-lg rounded-xl',
-        'panel' => 'p-3',
-    ],
-];
+        'xs' => [
+            'trigger' => 'min-h-8 px-2.5 text-xs rounded-lg gap-2',
+            'icon' => 'h-3.5 w-3.5',
+            'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
+            'search' => 'px-2.5 py-2 text-xs',
+            'option' => 'px-2.5 py-2 text-xs rounded-md',
+            'panel' => 'p-2',
+        ],
+        'sm' => [
+            'trigger' => 'min-h-9 px-3 text-sm rounded-xl gap-2',
+            'icon' => 'h-4 w-4',
+            'pill' => 'h-6 px-2 text-[11px] rounded-md',
+            'search' => 'px-3 py-2 text-sm',
+            'option' => 'px-3 py-2 text-sm rounded-md',
+            'panel' => 'p-2',
+        ],
+        'md' => [
+            'trigger' => 'min-h-10 px-3 text-sm rounded-xl gap-2.5',
+            'icon' => 'h-4 w-4',
+            'pill' => 'h-6 px-2 text-xs rounded-md',
+            'search' => 'px-3 py-2 text-sm',
+            'option' => 'px-3 py-2 text-sm rounded-lg',
+            'panel' => 'p-2',
+        ],
+        'lg' => [
+            'trigger' => 'min-h-11 px-4 text-base rounded-2xl gap-2.5',
+            'icon' => 'h-5 w-5',
+            'pill' => 'h-7 px-2.5 text-xs rounded-md',
+            'search' => 'px-4 py-2.5 text-base',
+            'option' => 'px-4 py-2.5 text-base rounded-lg',
+            'panel' => 'p-2.5',
+        ],
+        'xl' => [
+            'trigger' => 'min-h-12 px-4 text-lg rounded-2xl gap-3',
+            'icon' => 'h-5 w-5',
+            'pill' => 'h-8 px-3 text-sm rounded-lg',
+            'search' => 'px-4 py-3 text-lg',
+            'option' => 'px-4 py-3 text-lg rounded-xl',
+            'panel' => 'p-3',
+        ],
+    ];
 
     $variantMap = [
-        'default' => 'bg-background border-border',
-        'filled' => 'bg-muted/60 border-transparent focus-within:bg-background',
-        'ghost' => 'bg-transparent border-transparent shadow-none',
+        'primary' => 'bg-background border-border text-foreground',
+        'secondary' => 'bg-secondary border-transparent text-foreground',
+        'filled' => 'bg-muted/60 border-transparent text-foreground focus-within:bg-background',
+        'ghost' => 'bg-transparent border-transparent shadow-none text-foreground',
     ];
+
+    $placeholderTextClass = $variant === 'secondary'
+        ? 'text-foreground/70'
+        : 'text-muted-foreground';
+
+    $iconTextClass = $variant === 'secondary'
+        ? 'text-foreground/70'
+        : 'text-muted-foreground';
 
     $shadowMap = [
         'none' => '',
@@ -107,10 +116,10 @@
     ];
 
     $stateClasses = filled($error)
-    ? 'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20'
-    : (filled($success)
-        ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
-        : 'focus-within:border-primary focus-within:ring-primary/20');
+        ? 'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20'
+        : (filled($success)
+            ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
+            : 'focus-within:border-primary focus-within:ring-primary/20');
 
     $disabledClasses = $disabled ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
     $readonlyClasses = $readonly ? 'cursor-default' : 'cursor-pointer';
@@ -119,10 +128,10 @@
         'relative flex w-full items-center border transition-all duration-200',
         'text-left',
         'overflow-hidden',
-        'hover:border-foreground/20',
+        $variant === 'secondary' ? 'hover:opacity-90' : 'hover:border-foreground/20',
         'focus-within:ring-4 focus-within:shadow-md',
         $sizeMap[$size]['trigger'] ?? $sizeMap['md']['trigger'],
-        $variantMap[$variant] ?? $variantMap['default'],
+        $variantMap[$variant] ?? $variantMap['primary'],
         $shadowMap[$shadow] ?? '',
         $stateClasses,
         $disabledClasses,
@@ -143,6 +152,8 @@
     $initialValue = $multiple
         ? (is_array($value) ? array_values($value) : (filled($value) ? [(string) $value] : []))
         : (filled($value) ? (string) $value : '');
+
+    $singleInputAttributes = $attributes;
 @endphp
 
 <div
@@ -206,6 +217,13 @@
                 : !!this.normalizedSelected;
         },
 
+        syncSingle() {
+            if (!this.$refs.hiddenInput) return;
+
+            this.$refs.hiddenInput.value = this.selected ?? '';
+            this.$refs.hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+        },
+
         toggle() {
             if (this.disabled || this.readonly) return;
 
@@ -238,14 +256,16 @@
                     this.selected = [...this.normalizedSelected, option.value];
                 }
 
-                this.$dispatch('input', this.selected);
-                this.$dispatch('change', this.selected);
+                this.$dispatch('change', this.selected); // ✅ ADD THIS
                 return;
             }
 
             this.selected = option.value;
-            this.$dispatch('input', this.selected);
-            this.$dispatch('change', this.selected);
+
+            this.$nextTick(() => this.syncSingle());
+
+            this.$dispatch('change', this.selected); // ✅ ADD THIS
+
             this.close();
         },
 
@@ -253,8 +273,6 @@
             if (!this.multiple || this.disabled || this.readonly) return;
 
             this.selected = this.normalizedSelected.filter(item => item !== value);
-            this.$dispatch('input', this.selected);
-            this.$dispatch('change', this.selected);
         },
 
         clear() {
@@ -262,8 +280,10 @@
 
             this.selected = this.multiple ? [] : '';
             this.search = '';
-            this.$dispatch('input', this.selected);
-            this.$dispatch('change', this.selected);
+
+            if (!this.multiple) {
+                this.$nextTick(() => this.syncSingle());
+            }
         },
 
         isSelected(option) {
@@ -316,7 +336,7 @@
             class="{{ $triggerClasses }}"
         >
             @isset($leading)
-                <span class="shrink-0 text-muted-foreground">
+                <span class="shrink-0 {{ $iconTextClass }}">
                     {{ $leading }}
                 </span>
             @endisset
@@ -350,20 +370,20 @@
 
                         <span
                             x-show="multiple && selectedOptions.length === 0"
-                            class="text-muted-foreground"
+                            class="{{ $placeholderTextClass }}"
                             x-text="placeholder"
                         ></span>
                     </div>
                 </template>
 
                 <template x-if="!multiple && !selectedLabel">
-                    <span class="block truncate text-left text-muted-foreground" x-text="placeholder"></span>
+                    <span class="block truncate text-left {{ $placeholderTextClass }}" x-text="placeholder"></span>
                 </template>
             </div>
 
             <div class="ml-3 flex shrink-0 items-center gap-2">
                 @isset($trailing)
-                    <span class="shrink-0 text-muted-foreground">
+                    <span class="shrink-0 {{ $iconTextClass }}">
                         {{ $trailing }}
                     </span>
                 @endisset
@@ -383,7 +403,7 @@
                 @endif
 
                 <x-lucide-chevron-down
-                    class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 text-muted-foreground transition-transform duration-200"
+                    class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 {{ $iconTextClass }} transition-transform duration-200"
                     ::class="open ? 'rotate-180' : ''"
                 />
             </div>
@@ -391,13 +411,23 @@
 
         @if($name)
             <template x-if="!multiple">
-                <input type="hidden" name="{{ $name }}" :value="selected">
+                <input
+                    x-ref="hiddenInput"
+                    type="hidden"
+                    name="{{ $name }}"
+                    value="{{ is_array($initialValue) ? '' : $initialValue }}"
+                    {{ $singleInputAttributes }}
+                >
             </template>
 
             <template x-if="multiple">
                 <div>
                     <template x-for="(item, index) in normalizedSelected" :key="`${item}-${index}`">
-                        <input type="hidden" name="{{ $name }}[]" :value="item">
+                        <input
+                            type="hidden"
+                            name="{{ $name }}[]"
+                            :value="item"
+                        >
                     </template>
                 </div>
             </template>
