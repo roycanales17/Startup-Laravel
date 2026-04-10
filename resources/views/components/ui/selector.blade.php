@@ -33,7 +33,7 @@
         if (is_array($option)) {
             return [
                 'label' => $option['label'] ?? $option['value'] ?? '',
-                'value' => $option['value'] ?? $option['label'] ?? '',
+                'value' => (string) ($option['value'] ?? $option['label'] ?? ''),
                 'description' => $option['description'] ?? null,
                 'disabled' => (bool) ($option['disabled'] ?? false),
             ];
@@ -149,11 +149,26 @@
         ? 'text-sm text-red-500'
         : (filled($success) ? 'text-sm text-emerald-500' : 'text-xs text-muted-foreground');
 
-    $initialValue = $multiple
-        ? (is_array($value) ? array_values($value) : (filled($value) ? [(string) $value] : []))
-        : (filled($value) ? (string) $value : '');
+    if ($multiple) {
+        if (is_array($value)) {
+            $initialValue = array_values(array_map('strval', $value));
+        } elseif (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            $initialValue = is_array($decoded)
+                ? array_values(array_map('strval', $decoded))
+                : [(string) $value];
+        } else {
+            $initialValue = [];
+        }
+    } else {
+        $initialValue = filled($value) ? (string) $value : '';
+    }
+
+    $wireModel = $attributes->wire('model');
+    $wireModelName = $wireModel?->value();
 
     $singleInputAttributes = $attributes;
+    $multipleSelectAttributes = $attributes;
 @endphp
 
 <div
@@ -171,11 +186,12 @@
         options: @js($normalizedOptions),
         selected: @js($initialValue),
         highlightedIndex: 0,
+        model: {{ $wireModelName ? "\$wire.entangle('{$wireModelName}')" : 'null' }},
 
         get normalizedSelected() {
             return this.multiple
-                ? (Array.isArray(this.selected) ? this.selected : [])
-                : (this.selected ?? '');
+                ? (Array.isArray(this.selected) ? this.selected.map(String) : [])
+                : String(this.selected ?? '');
         },
 
         get filteredOptions() {
@@ -196,10 +212,10 @@
 
         get selectedOptions() {
             if (this.multiple) {
-                return this.options.filter(option => this.normalizedSelected.includes(option.value));
+                return this.options.filter(option => this.normalizedSelected.includes(String(option.value)));
             }
 
-            return this.options.filter(option => option.value === this.normalizedSelected);
+            return this.options.filter(option => String(option.value) === this.normalizedSelected);
         },
 
         get selectedLabel() {
@@ -207,21 +223,84 @@
                 return '';
             }
 
-            const found = this.options.find(option => option.value === this.normalizedSelected);
+            const found = this.options.find(option => String(option.value) === this.normalizedSelected);
             return found ? found.label : '';
         },
 
         get hasValue() {
             return this.multiple
                 ? this.normalizedSelected.length > 0
-                : !!this.normalizedSelected;
+                : this.normalizedSelected !== '';
+        },
+
+        normalizeIncoming(value) {
+            if (this.multiple) {
+                if (Array.isArray(value)) {
+                    return value.map(String);
+                }
+
+                if (typeof value === 'string' && value !== '') {
+                    try {
+                        const parsed = JSON.parse(value);
+                        return Array.isArray(parsed) ? parsed.map(String) : [String(value)];
+                    } catch {
+                        return [String(value)];
+                    }
+                }
+
+                return [];
+            }
+
+            return value == null ? '' : String(value);
+        },
+
+        syncSelectedFromModel(value = null) {
+            const incoming = value === null ? this.model : value;
+            this.selected = this.normalizeIncoming(incoming);
+        },
+
+        syncModelFromSelected() {
+            if (this.model === null || this.model === undefined) return;
+
+            this.model = this.multiple
+                ? [...this.normalizedSelected]
+                : this.normalizedSelected;
         },
 
         syncSingle() {
             if (!this.$refs.hiddenInput) return;
 
-            this.$refs.hiddenInput.value = this.selected ?? '';
+            this.$refs.hiddenInput.value = this.normalizedSelected;
             this.$refs.hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+            this.$refs.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+
+        syncMultiple() {
+            if (!this.$refs.multipleSelect) return;
+
+            const select = this.$refs.multipleSelect;
+            const values = this.normalizedSelected.map(String);
+
+            Array.from(select.options).forEach(option => {
+                option.selected = values.includes(String(option.value));
+            });
+
+            select.dispatchEvent(new Event('input', { bubbles: true }));
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+
+        syncOutputs() {
+            this.syncModelFromSelected();
+
+            if (this.multiple) {
+                this.$nextTick(() => this.syncMultiple());
+            } else {
+                this.$nextTick(() => this.syncSingle());
+            }
+        },
+
+        dispatchChange() {
+            this.$dispatch('change', this.selected);
         },
 
         toggle() {
@@ -246,33 +325,42 @@
             this.highlightedIndex = 0;
         },
 
+        resetSelection() {
+            if (this.disabled || this.readonly) return;
+
+            this.selected = this.multiple ? [] : '';
+            this.syncOutputs();
+            this.dispatchChange();
+            this.close();
+        },
+
         select(option) {
             if (option.disabled || this.disabled || this.readonly) return;
 
             if (this.multiple) {
-                if (this.normalizedSelected.includes(option.value)) {
-                    this.selected = this.normalizedSelected.filter(value => value !== option.value);
+                if (this.normalizedSelected.includes(String(option.value))) {
+                    this.selected = this.normalizedSelected.filter(value => value !== String(option.value));
                 } else {
-                    this.selected = [...this.normalizedSelected, option.value];
+                    this.selected = [...this.normalizedSelected, String(option.value)];
                 }
 
-                this.$dispatch('change', this.selected); // ✅ ADD THIS
+                this.syncOutputs();
+                this.dispatchChange();
                 return;
             }
 
-            this.selected = option.value;
-
-            this.$nextTick(() => this.syncSingle());
-
-            this.$dispatch('change', this.selected); // ✅ ADD THIS
-
+            this.selected = String(option.value);
+            this.syncOutputs();
+            this.dispatchChange();
             this.close();
         },
 
         remove(value) {
             if (!this.multiple || this.disabled || this.readonly) return;
 
-            this.selected = this.normalizedSelected.filter(item => item !== value);
+            this.selected = this.normalizedSelected.filter(item => item !== String(value));
+            this.syncOutputs();
+            this.dispatchChange();
         },
 
         clear() {
@@ -280,16 +368,14 @@
 
             this.selected = this.multiple ? [] : '';
             this.search = '';
-
-            if (!this.multiple) {
-                this.$nextTick(() => this.syncSingle());
-            }
+            this.syncOutputs();
+            this.dispatchChange();
         },
 
         isSelected(option) {
             return this.multiple
-                ? this.normalizedSelected.includes(option.value)
-                : this.normalizedSelected === option.value;
+                ? this.normalizedSelected.includes(String(option.value))
+                : this.normalizedSelected === String(option.value);
         },
 
         highlightNext() {
@@ -305,8 +391,39 @@
         selectHighlighted() {
             if (!this.open || this.filteredOptions.length === 0) return;
             this.select(this.filteredOptions[this.highlightedIndex]);
+        },
+
+        init() {
+            if (this.model !== null && this.model !== undefined) {
+                this.syncSelectedFromModel(this.model);
+
+                this.$watch('model', value => {
+                    const normalized = this.normalizeIncoming(value);
+                    const current = JSON.stringify(this.selected);
+                    const incoming = JSON.stringify(normalized);
+
+                    if (current !== incoming) {
+                        this.selected = normalized;
+                    }
+                });
+            }
+
+            this.$watch('selected', () => {
+                if (this.multiple) {
+                    this.$nextTick(() => this.syncMultiple());
+                } else {
+                    this.$nextTick(() => this.syncSingle());
+                }
+            });
+
+            if (this.multiple) {
+                this.$nextTick(() => this.syncMultiple());
+            } else {
+                this.$nextTick(() => this.syncSingle());
+            }
         }
     }"
+    x-init="init()"
     x-on:click.outside="close()"
     class="w-full"
 >
@@ -421,15 +538,26 @@
             </template>
 
             <template x-if="multiple">
-                <div>
-                    <template x-for="(item, index) in normalizedSelected" :key="`${item}-${index}`">
-                        <input
-                            type="hidden"
-                            name="{{ $name }}[]"
-                            :value="item"
+                <select
+                    x-ref="multipleSelect"
+                    multiple
+                    class="hidden"
+                    name="{{ $name }}[]"
+                    {{ $multipleSelectAttributes }}
+                >
+                    @foreach ($normalizedOptions as $option)
+                        <option
+                            value="{{ $option['value'] }}"
+                            @selected(in_array(
+                                $option['value'],
+                                is_array($initialValue) ? $initialValue : (array) $initialValue,
+                                true
+                            ))
                         >
-                    </template>
-                </div>
+                            {{ $option['label'] }}
+                        </option>
+                    @endforeach
+                </select>
             </template>
         @endif
 
@@ -439,6 +567,24 @@
             x-transition.origin.top.left
             class="{{ $panelClasses }}"
         >
+            @if(! $multiple)
+                <button
+                    type="button"
+                    @click="resetSelection()"
+                    class="flex w-full items-center justify-between text-left transition bg-background"
+                    :class="[
+                        '{{ $sizeMap[$size]['option'] ?? $sizeMap['md']['option'] }}',
+                        !hasValue ? 'bg-muted font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/70'
+                    ]"
+                >
+                    <span class="truncate">{{ $placeholder }}</span>
+
+                    <span x-show="!hasValue" class="ml-3 shrink-0 text-foreground">
+                        <x-lucide-check class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }}" />
+                    </span>
+                </button>
+            @endif
+
             @if($searchable)
                 <div class="border-b border-border bg-background">
                     <div class="relative bg-background">
