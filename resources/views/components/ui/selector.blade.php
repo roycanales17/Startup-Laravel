@@ -51,7 +51,7 @@
 
     $sizeMap = [
         'xs' => [
-            'trigger' => 'min-h-8 px-2.5 text-xs rounded-lg gap-2',
+            'trigger' => 'min-h-8 text-xs rounded-lg px-2.5 gap-2',
             'icon' => 'h-3.5 w-3.5',
             'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
             'search' => 'px-2.5 py-2 text-xs',
@@ -59,7 +59,7 @@
             'panel' => 'p-2',
         ],
         'sm' => [
-            'trigger' => 'min-h-9 px-3 text-sm rounded-xl gap-2',
+            'trigger' => 'min-h-9 text-sm rounded-lg px-3 gap-2',
             'icon' => 'h-4 w-4',
             'pill' => 'h-6 px-2 text-[11px] rounded-md',
             'search' => 'px-3 py-2 text-sm',
@@ -67,7 +67,7 @@
             'panel' => 'p-2',
         ],
         'md' => [
-            'trigger' => 'min-h-10 px-3 text-sm rounded-xl gap-2.5',
+            'trigger' => 'min-h-10 text-sm rounded-xl px-3 gap-2.5',
             'icon' => 'h-4 w-4',
             'pill' => 'h-6 px-2 text-xs rounded-md',
             'search' => 'px-3 py-2 text-sm',
@@ -75,7 +75,7 @@
             'panel' => 'p-2',
         ],
         'lg' => [
-            'trigger' => 'min-h-11 px-4 text-base rounded-2xl gap-2.5',
+            'trigger' => 'min-h-11 text-base rounded-2xl px-4 gap-2.5',
             'icon' => 'h-5 w-5',
             'pill' => 'h-7 px-2.5 text-xs rounded-md',
             'search' => 'px-4 py-2.5 text-base',
@@ -83,7 +83,7 @@
             'panel' => 'p-2.5',
         ],
         'xl' => [
-            'trigger' => 'min-h-12 px-4 text-lg rounded-2xl gap-3',
+            'trigger' => 'min-h-12 text-lg rounded-2xl px-4 gap-3',
             'icon' => 'h-5 w-5',
             'pill' => 'h-8 px-3 text-sm rounded-lg',
             'search' => 'px-4 py-3 text-lg',
