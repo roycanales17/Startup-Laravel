@@ -80,11 +80,11 @@
         default => 'bg-background border-border',
     };
 
-    $stateClasses = $hasError
-        ? 'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20'
-        : ($hasSuccess
-            ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
-            : 'border-border hover:border-foreground/20 focus-within:border-primary focus-within:ring-primary/20');
+    // Error/success border state is driven by Alpine (hasAnyError) so it can clear
+    // dynamically when files are selected. Only success stays static here.
+    $stateClasses = $hasSuccess
+        ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
+        : 'hover:border-foreground/20 focus-within:border-primary focus-within:ring-primary/20';
 
     $dropzoneClasses = implode(' ', [
         'relative w-full border-2 border-dashed transition-all duration-200 focus-within:ring-4',
@@ -121,6 +121,7 @@
 @endphp
 
 <div
+    {{ $attributes->only(['wire:key']) }}
     class='w-full space-y-2'
     x-data="{
         isDragging: false,
@@ -129,7 +130,12 @@
         accept: {{ \Illuminate\Support\Js::from($accept) }},
         multiple: {{ $multiple ? 'true' : 'false' }},
         showPreview: {{ $showPreview ? 'true' : 'false' }},
-        errorMessage: @js($error),
+        errorMessage: null,
+        serverError: {{ $hasError ? 'true' : 'false' }},
+
+        get hasAnyError() {
+            return !!this.errorMessage || (this.serverError && !this.files.length);
+        },
 
         init() {
             this.syncFilesFromInput();
@@ -155,7 +161,6 @@
 
         handleChange(event) {
             this.syncFilesFromInput();
-            this.dispatchNativeEvents(event.target);
         },
 
         handleDrop(event) {
@@ -202,7 +207,7 @@
             const input = this.$refs.input;
             input.value = '';
             this.files = [];
-            this.errorMessage = @js($error);
+            this.errorMessage = null;
             this.dispatchNativeEvents(input);
         },
 
@@ -216,7 +221,7 @@
         },
 
         validateFiles() {
-            this.errorMessage = @js($error);
+            this.errorMessage = null;
 
             if (!this.files.length) {
                 return;
@@ -257,7 +262,6 @@
         },
 
         dispatchNativeEvents(input) {
-            input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
         },
 
@@ -318,7 +322,7 @@
         @if($multiple) multiple @endif
         @if($accept) accept='{{ $accept }}' @endif
         @change='handleChange($event)'
-        {{ $attributes->except(['class']) }}
+        {{ $attributes->except(['class', 'wire:key']) }}
     />
 
     @if($mode === 'dropzone')
@@ -329,7 +333,7 @@
                 :class="{
                     'ring-4 border-primary bg-muted/40': isDragging,
                     'cursor-not-allowed opacity-60': disabledOrReadonly(),
-                    'border-red-500/70': errorMessage
+                    'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20': hasAnyError,
                 }"
                 @dragover.prevent='if (!disabledOrReadonly()) isDragging = true'
                 @dragleave.prevent='isDragging = false'
@@ -389,10 +393,9 @@
             <div
                 class='{{ $inputWrapperClasses }} group'
                 :class="{
-                    'border-red-500/70': errorMessage
+                    'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20': hasAnyError,
                 }"
             >
-
                 <div class='flex min-w-0 flex-1 items-center gap-3 text-left'>
                     <div class='{{ $inputButtonClasses }} bg-transparent border-none shadow-none text-primary cursor-pointer'
                          @click.stop='openPicker()'
@@ -530,6 +533,13 @@
         <p class='text-xs text-muted-foreground'>{{ $emptyText }}</p>
     </div>
 
+    {{-- Server-side validation error (Blade-rendered, same as input.blade.php).
+         Hidden by Alpine when files have been picked, so UX clears immediately. --}}
+    @if($error)
+        <p class='text-xs text-red-500' x-show='!files.length'>{{ $error }}</p>
+    @endif
+
+    {{-- Client-side validation error (file size / type), managed entirely by Alpine. --}}
     <template x-if='errorMessage'>
         <p class='text-xs text-red-500' x-text='errorMessage'></p>
     </template>

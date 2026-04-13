@@ -138,6 +138,7 @@
 @endphp
 
 <div
+    {{ $attributes->only(['wire:key']) }}
     class="w-full space-y-2"
     x-data="{
         open: false,
@@ -457,7 +458,7 @@
                     @focus="onFocus()"
                     @keydown="onKeydown($event)"
                     autocomplete="off"
-                    {{ $attributes->except(['wireTarget', 'type'])->merge(['class' => $singleInputClasses]) }}
+                    {{ $attributes->except(['wireTarget', 'type', 'wire:key'])->merge(['class' => $singleInputClasses]) }}
                     @if($wireTargetAttr)
                         wire:loading.attr="disabled"
                     wire:target="{{ $wireTargetAttr }}"
