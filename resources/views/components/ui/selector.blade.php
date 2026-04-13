@@ -112,12 +112,12 @@
         default => 'p-2',
     };
 
-    $variantMap = [
-        'primary' => 'bg-background border-border text-foreground',
+    $variantClasses = match ($variant) {
         'secondary' => 'bg-secondary border-transparent text-foreground',
         'filled' => 'bg-muted/60 border-transparent text-foreground focus-within:bg-background',
         'ghost' => 'bg-transparent border-transparent shadow-none text-foreground',
-    ];
+        default => 'bg-background border-border text-foreground', // primary
+    };
 
     $placeholderTextClass = $variant === 'secondary'
         ? 'text-foreground/70'
@@ -151,7 +151,7 @@
         $variant === 'secondary' ? 'hover:opacity-90' : 'hover:border-foreground/20',
         $sizeClasses,
         $shadowMap[$shadow] ?? '',
-        $variantMap[$variant] ?? $variantMap['primary'],
+        $variantClasses,
         $stateClasses,
         $disabledClasses,
         $readonlyClasses,
