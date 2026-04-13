@@ -21,6 +21,7 @@
     'loading' => false,
     'disabled' => false,
     'readonly' => false,
+    'required' => false,
 
     'value' => null,
     'options' => [],
@@ -429,7 +430,13 @@
 >
     @if($label)
         <label for="{{ $selectorId }}" class="mb-2 block">
-            <span class="text-sm font-medium text-foreground">{{ $label }}</span>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-foreground">
+                <span>{{ $label }}</span>
+
+                @if($required)
+                    <span class="text-red-500">*</span>
+                @endif
+            </span>
 
             @if($description)
                 <span class="mt-1 block text-xs text-muted-foreground">
