@@ -48,50 +48,69 @@
         ];
     })->values()->all();
 
-    $hasMessage = filled($error) || filled($success) || filled($hint);
+    $sizeClasses = match ($size) {
+        'xs' => 'min-h-8 text-xs rounded-lg',
+        'sm' => 'min-h-9 text-sm rounded-lg',
+        'lg' => 'min-h-11 text-base rounded-2xl',
+        'xl' => 'min-h-12 text-lg rounded-2xl',
+        default => 'min-h-10 text-sm rounded-xl',
+    };
 
-    $sizeMap = [
-        'xs' => [
-            'trigger' => 'min-h-8 text-xs rounded-lg px-2.5 gap-2',
-            'icon' => 'h-3.5 w-3.5',
-            'pill' => 'h-5 px-1.5 text-[10px] rounded-md',
-            'search' => 'px-2.5 py-2 text-xs',
-            'option' => 'px-2.5 py-2 text-xs rounded-md',
-            'panel' => 'p-2',
-        ],
-        'sm' => [
-            'trigger' => 'min-h-9 text-sm rounded-lg px-3 gap-2',
-            'icon' => 'h-4 w-4',
-            'pill' => 'h-6 px-2 text-[11px] rounded-md',
-            'search' => 'px-3 py-2 text-sm',
-            'option' => 'px-3 py-2 text-sm rounded-md',
-            'panel' => 'p-2',
-        ],
-        'md' => [
-            'trigger' => 'min-h-10 text-sm rounded-xl px-3 gap-2.5',
-            'icon' => 'h-4 w-4',
-            'pill' => 'h-6 px-2 text-xs rounded-md',
-            'search' => 'px-3 py-2 text-sm',
-            'option' => 'px-3 py-2 text-sm rounded-lg',
-            'panel' => 'p-2',
-        ],
-        'lg' => [
-            'trigger' => 'min-h-11 text-base rounded-2xl px-4 gap-2.5',
-            'icon' => 'h-5 w-5',
-            'pill' => 'h-7 px-2.5 text-xs rounded-md',
-            'search' => 'px-4 py-2.5 text-base',
-            'option' => 'px-4 py-2.5 text-base rounded-lg',
-            'panel' => 'p-2.5',
-        ],
-        'xl' => [
-            'trigger' => 'min-h-12 text-lg rounded-2xl px-4 gap-3',
-            'icon' => 'h-5 w-5',
-            'pill' => 'h-8 px-3 text-sm rounded-lg',
-            'search' => 'px-4 py-3 text-lg',
-            'option' => 'px-4 py-3 text-lg rounded-xl',
-            'panel' => 'p-3',
-        ],
-    ];
+    $wrapperPaddingClasses = match ($size) {
+        'xs' => 'px-2.5',
+        'sm' => 'px-3',
+        'lg' => 'px-4',
+        'xl' => 'px-4',
+        default => 'px-3',
+    };
+
+    $multiplePaddingClasses = match ($size) {
+        'xs' => 'px-2.5 py-1.5',
+        'sm' => 'px-3 py-2',
+        'lg' => 'px-4 py-2.5',
+        'xl' => 'px-4 py-3',
+        default => 'px-3 py-2',
+    };
+
+    $iconSizeClasses = match ($size) {
+        'xs' => 'h-3.5 w-3.5',
+        'sm' => 'h-4 w-4',
+        'lg' => 'h-5 w-5',
+        'xl' => 'h-5 w-5',
+        default => 'h-4 w-4',
+    };
+
+    $pillClasses = match ($size) {
+        'xs' => 'h-5 px-1.5 text-[10px] rounded-md',
+        'sm' => 'h-6 px-2 text-[11px] rounded-md',
+        'lg' => 'h-7 px-2.5 text-xs rounded-md',
+        'xl' => 'h-8 px-3 text-sm rounded-lg',
+        default => 'h-6 px-2 text-xs rounded-md',
+    };
+
+    $searchClasses = match ($size) {
+        'xs' => 'px-2.5 py-2 text-xs',
+        'sm' => 'px-3 py-2 text-sm',
+        'lg' => 'px-4 py-2.5 text-base',
+        'xl' => 'px-4 py-3 text-lg',
+        default => 'px-3 py-2 text-sm',
+    };
+
+    $optionClasses = match ($size) {
+        'xs' => 'px-2.5 py-2 text-xs rounded-md',
+        'sm' => 'px-3 py-2 text-sm rounded-md',
+        'lg' => 'px-4 py-2.5 text-base rounded-lg',
+        'xl' => 'px-4 py-3 text-lg rounded-xl',
+        default => 'px-3 py-2 text-sm rounded-lg',
+    };
+
+    $panelPaddingClasses = match ($size) {
+        'xs' => 'p-2',
+        'sm' => 'p-2',
+        'lg' => 'p-2.5',
+        'xl' => 'p-3',
+        default => 'p-2',
+    };
 
     $variantMap = [
         'primary' => 'bg-background border-border text-foreground',
@@ -126,17 +145,17 @@
     $readonlyClasses = $readonly ? 'cursor-default' : 'cursor-pointer';
 
     $triggerClasses = implode(' ', array_filter([
-        'relative flex w-full items-center border transition-all duration-200',
-        'text-left',
-        'overflow-hidden',
-        $variant === 'secondary' ? 'hover:opacity-90' : 'hover:border-foreground/20',
+        'relative w-full border transition-all duration-200',
+        'overflow-hidden text-left',
         'focus-within:ring-4 focus-within:shadow-md',
-        $sizeMap[$size]['trigger'] ?? $sizeMap['md']['trigger'],
-        $variantMap[$variant] ?? $variantMap['primary'],
+        $variant === 'secondary' ? 'hover:opacity-90' : 'hover:border-foreground/20',
+        $sizeClasses,
         $shadowMap[$shadow] ?? '',
+        $variantMap[$variant] ?? $variantMap['primary'],
         $stateClasses,
         $disabledClasses,
         $readonlyClasses,
+        $multiple ? "flex flex-wrap items-center gap-2 cursor-text {$multiplePaddingClasses}" : "flex items-center {$wrapperPaddingClasses}",
     ]));
 
     $panelClasses = implode(' ', array_filter([
@@ -144,11 +163,6 @@
         'isolate',
         $shadowMap[$shadow] ?? '',
     ]));
-
-    $message = $error ?: ($success ?: $hint);
-    $messageClass = filled($error)
-        ? 'text-sm text-red-500'
-        : (filled($success) ? 'text-sm text-emerald-500' : 'text-xs text-muted-foreground');
 
     if ($multiple) {
         if (is_array($value)) {
@@ -426,24 +440,24 @@
     }"
     x-init="init()"
     x-on:click.outside="close()"
-    class="w-full"
+    class="w-full space-y-2"
 >
     @if($label)
-        <label for="{{ $selectorId }}" class="mb-2 block">
-            <span class="inline-flex items-center gap-1 text-sm font-medium text-foreground">
+        <div class="space-y-1">
+            <label for="{{ $selectorId }}" class="inline-flex items-center gap-1 text-sm font-medium text-foreground">
                 <span>{{ $label }}</span>
 
                 @if($required)
                     <span class="text-red-500">*</span>
                 @endif
-            </span>
+            </label>
 
             @if($description)
-                <span class="mt-1 block text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground">
                     {{ $description }}
-                </span>
+                </p>
             @endif
-        </label>
+        </div>
     @endif
 
     <div class="relative">
@@ -460,16 +474,16 @@
             class="{{ $triggerClasses }}"
         >
             @isset($leading)
-                <span class="shrink-0 {{ $iconTextClass }}">
+                <div class="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground">
                     {{ $leading }}
-                </span>
+                </div>
             @endisset
 
-            <div class="min-w-0 flex-1">
+            <div class="min-w-0 flex-1 {{ isset($leading) ? 'pl-7' : '' }}">
                 <template x-if="multiple && selectedOptions.length > 0">
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="option in selectedOptions" :key="option.value">
-                            <span class="inline-flex max-w-full items-center gap-1 bg-muted text-foreground {{ $sizeMap[$size]['pill'] ?? $sizeMap['md']['pill'] }}">
+                            <span class="inline-flex max-w-full items-center gap-1 bg-muted text-foreground {{ $pillClasses }}">
                                 <span class="truncate" x-text="option.label"></span>
 
                                 <button
@@ -513,7 +527,7 @@
                 @endisset
 
                 @if($loading)
-                    <x-lucide-loader-2 class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 animate-spin text-muted-foreground" />
+                    <x-lucide-loader-2 class="{{ $iconSizeClasses }} shrink-0 animate-spin text-muted-foreground" />
                 @elseif($clearable)
                     <button
                         type="button"
@@ -522,12 +536,12 @@
                         @click.stop="clear()"
                         class="inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground"
                     >
-                        <x-lucide-x class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }}" />
+                        <x-lucide-x class="{{ $iconSizeClasses }}" />
                     </button>
                 @endif
 
                 <x-lucide-chevron-down
-                    class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }} shrink-0 {{ $iconTextClass }} transition-transform duration-200"
+                    class="{{ $iconSizeClasses }} shrink-0 {{ $iconTextClass }} transition-transform duration-200"
                     ::class="open ? 'rotate-180' : ''"
                 />
             </div>
@@ -580,14 +594,14 @@
                     @click="resetSelection()"
                     class="flex w-full items-center justify-between text-left transition bg-background"
                     :class="[
-                        '{{ $sizeMap[$size]['option'] ?? $sizeMap['md']['option'] }}',
+                        '{{ $optionClasses }}',
                         !hasValue ? 'bg-muted font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/70'
                     ]"
                 >
                     <span class="truncate">{{ $placeholder }}</span>
 
                     <span x-show="!hasValue" class="ml-3 shrink-0 text-foreground">
-                        <x-lucide-check class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }}" />
+                        <x-lucide-check class="{{ $iconSizeClasses }}" />
                     </span>
                 </button>
             @endif
@@ -600,17 +614,17 @@
                             type="text"
                             x-model="search"
                             :placeholder="searchPlaceholder"
-                            class="w-full border-0 bg-background pr-10 text-foreground outline-none ring-0 placeholder:text-muted-foreground {{ $sizeMap[$size]['search'] ?? $sizeMap['md']['search'] }}"
+                            class="w-full border-0 bg-background pr-10 text-foreground outline-none ring-0 placeholder:text-muted-foreground {{ $searchClasses }}"
                         />
 
                         <span class="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center text-muted-foreground">
-                            <x-lucide-search class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }}" />
+                            <x-lucide-search class="{{ $iconSizeClasses }}" />
                         </span>
                     </div>
                 </div>
             @endif
 
-            <div class="max-h-72 overflow-y-auto bg-background {{ $sizeMap[$size]['panel'] ?? $sizeMap['md']['panel'] }}">
+            <div class="max-h-72 overflow-y-auto bg-background {{ $panelPaddingClasses }}">
                 <template x-if="filteredOptions.length === 0">
                     <div class="bg-background px-3 py-6 text-center text-sm text-muted-foreground" x-text="emptyText"></div>
                 </template>
@@ -623,7 +637,7 @@
                         :disabled="option.disabled"
                         class="flex w-full items-start justify-between text-left transition bg-background"
                         :class="[
-                            '{{ $sizeMap[$size]['option'] ?? $sizeMap['md']['option'] }}',
+                            '{{ $optionClasses }}',
                             option.disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted/70',
                             highlightedIndex === index ? 'bg-muted/70' : 'bg-background',
                             isSelected(option) ? 'bg-muted font-medium text-foreground' : 'text-foreground'
@@ -637,7 +651,7 @@
                         </span>
 
                         <span x-show="isSelected(option)" class="ml-3 shrink-0 text-foreground">
-                            <x-lucide-check class="{{ $sizeMap[$size]['icon'] ?? $sizeMap['md']['icon'] }}" />
+                            <x-lucide-check class="{{ $iconSizeClasses }}" />
                         </span>
                     </button>
                 </template>
@@ -645,9 +659,11 @@
         </div>
     </div>
 
-    @if($hasMessage)
-        <p class="mt-2 {{ $messageClass }}">
-            {{ $message }}
-        </p>
+    @if($error)
+        <p class="text-xs text-red-500">{{ $error }}</p>
+    @elseif($success)
+        <p class="text-xs text-emerald-600 dark:text-emerald-400">{{ $success }}</p>
+    @elseif($hint)
+        <p class="text-xs text-muted-foreground">{{ $hint }}</p>
     @endif
 </div>

@@ -80,8 +80,6 @@
         default => 'bg-background border-border',
     };
 
-    // Error/success border state is driven by Alpine (hasAnyError) so it can clear
-    // dynamically when files are selected. Only success stays static here.
     $stateClasses = $hasSuccess
         ? 'border-emerald-500/70 focus-within:border-emerald-500 focus-within:ring-emerald-500/20'
         : 'hover:border-foreground/20 focus-within:border-primary focus-within:ring-primary/20';
@@ -122,7 +120,7 @@
 
 <div
     {{ $attributes->only(['wire:key']) }}
-    class='w-full space-y-2'
+    class="w-full space-y-2"
     x-data="{
         isDragging: false,
         files: [],
@@ -131,35 +129,58 @@
         multiple: {{ $multiple ? 'true' : 'false' }},
         showPreview: {{ $showPreview ? 'true' : 'false' }},
         errorMessage: null,
-        serverError: {{ $hasError ? 'true' : 'false' }},
 
         get hasAnyError() {
-            return !!this.errorMessage || (this.serverError && !this.files.length);
+            return !!this.errorMessage;
         },
 
         init() {
             this.syncFilesFromInput();
         },
 
+        makeFileId(file, index) {
+            return [
+                file.name || 'file',
+                file.size || 0,
+                file.type || 'unknown',
+                file.lastModified || 0,
+                index,
+            ].join('__');
+        },
+
+        cleanupPreviews(files = this.files) {
+            files.forEach(file => {
+                if (file.preview) {
+                    URL.revokeObjectURL(file.preview);
+                }
+            });
+        },
+
         syncFilesFromInput() {
             const input = this.$refs.input;
 
             if (!input || !input.files) {
+                this.cleanupPreviews();
                 this.files = [];
+                this.validateFiles();
                 return;
             }
 
-            this.files = Array.from(input.files).map(file => ({
+            const nextFiles = Array.from(input.files).map((file, index) => ({
+                id: this.makeFileId(file, index),
                 name: file.name,
                 size: file.size,
                 type: file.type,
+                lastModified: file.lastModified ?? 0,
                 preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
             }));
 
+            this.cleanupPreviews();
+            this.files = nextFiles;
             this.validateFiles();
         },
 
-        handleChange(event) {
+        handleChange() {
             this.syncFilesFromInput();
         },
 
@@ -190,13 +211,14 @@
             const input = this.$refs.input;
             const dt = new DataTransfer();
 
-            Array.from(input.files).forEach((file, fileIndex) => {
+            Array.from(input.files || []).forEach((file, fileIndex) => {
                 if (fileIndex !== index) {
                     dt.items.add(file);
                 }
             });
 
             input.files = dt.files;
+            this.errorMessage = null;
             this.syncFilesFromInput();
             this.dispatchNativeEvents(input);
         },
@@ -206,8 +228,9 @@
 
             const input = this.$refs.input;
             input.value = '';
-            this.files = [];
             this.errorMessage = null;
+            this.cleanupPreviews();
+            this.files = [];
             this.dispatchNativeEvents(input);
         },
 
@@ -262,6 +285,7 @@
         },
 
         dispatchNativeEvents(input) {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
         },
 
@@ -292,18 +316,19 @@
             return 'file';
         },
     }"
+    x-on:beforeunload.window="cleanupPreviews()"
 >
     @if($label)
-        <div class='space-y-1'>
-            <label for='{{ $inputId }}' class='inline-flex items-center gap-1 text-sm font-medium text-foreground'>
+        <div class="space-y-1">
+            <label for="{{ $inputId }}" class="inline-flex items-center gap-1 text-sm font-medium text-foreground">
                 <span>{{ $label }}</span>
                 @if($required)
-                    <span class='text-red-500'>*</span>
+                    <span class="text-red-500">*</span>
                 @endif
             </label>
 
             @if($description)
-                <p class='text-xs text-muted-foreground'>
+                <p class="text-xs text-muted-foreground">
                     {{ $description }}
                 </p>
             @endif
@@ -311,77 +336,78 @@
     @endif
 
     <input
-        x-ref='input'
-        id='{{ $inputId }}'
-        type='file'
-        class='sr-only'
-        @if($name) name='{{ $multiple ? $name . '[]' : $name }}' @endif
+        x-ref="input"
+        id="{{ $inputId }}"
+        type="file"
+        class="sr-only"
+        @if($name) name="{{ $multiple ? $name . '[]' : $name }}" @endif
         @if($required) required @endif
         @if($disabled) disabled @endif
         @if($readonly) disabled @endif
         @if($multiple) multiple @endif
-        @if($accept) accept='{{ $accept }}' @endif
-        @change='handleChange($event)'
+        @if($accept) accept="{{ $accept }}" @endif
+        @change="handleChange()"
         {{ $attributes->except(['class', 'wire:key']) }}
     />
 
     @if($mode === 'dropzone')
-        <div class='relative'>
+        <div class="relative">
             <label
-                for='{{ $inputId }}'
-                class='{{ $dropzoneClasses }} flex cursor-pointer flex-col items-center justify-center text-center'
+                for="{{ $inputId }}"
+                class="{{ $dropzoneClasses }} flex cursor-pointer flex-col items-center justify-center text-center
+                    @if($error) border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20 @endif"
                 :class="{
                     'ring-4 border-primary bg-muted/40': isDragging,
                     'cursor-not-allowed opacity-60': disabledOrReadonly(),
                     'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20': hasAnyError,
                 }"
-                @dragover.prevent='if (!disabledOrReadonly()) isDragging = true'
-                @dragleave.prevent='isDragging = false'
-                @drop.prevent='isDragging = false; handleDrop($event)'
+                @dragover.prevent="if (!disabledOrReadonly()) isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="isDragging = false; handleDrop($event)"
             >
-                <div class='flex flex-col items-center justify-center gap-3'>
-                    <div class='flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground'>
-                        <x-lucide-upload-cloud class='h-6 w-6' />
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <x-lucide-upload-cloud class="h-6 w-6" />
                     </div>
 
-                    <div class='space-y-1'>
-                        <p class='text-sm font-medium text-foreground' x-show='!files.length'>
+                    <div class="space-y-1">
+                        <p class="text-sm font-medium text-foreground" x-show="!files.length">
                             {{ $dragText }}
                         </p>
 
-                        <p class='text-sm font-medium text-foreground' x-show='files.length'>
-                            File selected<span x-show='files.length > 1'>s</span>
+                        <p class="text-sm font-medium text-foreground" x-show="files.length">
+                            File selected<span x-show="files.length > 1">s</span>
                         </p>
 
-                        <p class='text-xs text-muted-foreground' x-show='!files.length'>
+                        <p class="text-xs text-muted-foreground" x-show="!files.length">
                             {{ $browseText }}
                         </p>
 
-                        <p class='text-xs text-muted-foreground truncate' x-show='files.length && !showPreview'>
-                            <template x-if='files.length === 1'>
-                                <span x-text='files[0].name'></span>
+                        <p class="text-xs text-muted-foreground truncate" x-show="files.length && !showPreview">
+                            <template x-if="files.length === 1">
+                                <span x-text="files[0].name"></span>
                             </template>
 
-                            <template x-if='files.length > 1'>
-                                <span x-text='files.length + " files selected"'></span>
+                            <template x-if="files.length > 1">
+                                <span x-text="files.length + ' files selected'"></span>
                             </template>
                         </p>
                     </div>
 
-                    <div class='flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground'>
+                    <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
                         @if($acceptLabel)
-                            <span class='rounded-full bg-muted px-2.5 py-1'>
+                            <span class="rounded-full bg-muted px-2.5 py-1">
                                 Allowed: {{ $acceptLabel }}
                             </span>
                         @endif
 
                         @if($maxMb)
-                            <span class='rounded-full bg-muted px-2.5 py-1'>
+                            <span class="rounded-full bg-muted px-2.5 py-1">
                                 Max: {{ rtrim(rtrim(number_format((float) $maxMb, 2, '.', ''), '0'), '.') }} MB
                             </span>
                         @endif
 
-                        <span class='rounded-full bg-muted px-2.5 py-1'>
+                        <span class="rounded-full bg-muted px-2.5 py-1">
                             {{ $multiple ? 'Multiple files allowed' : 'Single file only' }}
                         </span>
                     </div>
@@ -389,136 +415,138 @@
             </label>
         </div>
     @else
-        <div class='space-y-2'>
+        <div class="space-y-2">
             <div
-                class='{{ $inputWrapperClasses }} group'
+                class="{{ $inputWrapperClasses }} group
+                    @if($error) border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20 @endif"
                 :class="{
                     'border-red-500/70 focus-within:border-red-500 focus-within:ring-red-500/20': hasAnyError,
                 }"
             >
-                <div class='flex min-w-0 flex-1 items-center gap-3 text-left'>
-                    <div class='{{ $inputButtonClasses }} bg-transparent border-none shadow-none text-primary cursor-pointer'
-                         @click.stop='openPicker()'
+                <div class="flex min-w-0 flex-1 items-center gap-3 text-left">
+                    <div
+                        class="{{ $inputButtonClasses }} bg-transparent border-none shadow-none text-primary cursor-pointer"
+                        @click.stop="openPicker()"
                     >
-                        <x-lucide-upload class='h-4 w-4' />
+                        <x-lucide-upload class="h-4 w-4" />
                         <span>Upload</span>
                     </div>
 
-                    <div class='h-5 w-px bg-border'></div>
+                    <div class="h-5 w-px bg-border"></div>
 
-                    <p class='truncate text-left text-muted-foreground'>
-                        <template x-if='files.length === 0'>
+                    <p class="truncate text-left text-muted-foreground">
+                        <template x-if="files.length === 0">
                             <span>Click anywhere to upload file</span>
                         </template>
 
-                        <template x-if='files.length === 1'>
-                            <span class='font-medium text-foreground' x-text='files[0].name'></span>
+                        <template x-if="files.length === 1">
+                            <span class="font-medium text-foreground" x-text="files[0].name"></span>
                         </template>
 
-                        <template x-if='files.length > 1'>
-                            <span class='font-medium text-foreground' x-text='files.length + " files selected"'></span>
+                        <template x-if="files.length > 1">
+                            <span class="font-medium text-foreground" x-text="files.length + ' files selected'"></span>
                         </template>
                     </p>
                 </div>
 
                 <button
-                    type='button'
-                    class='mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground'
-                    x-show='files.length && !showPreview && !disabledOrReadonly()'
+                    type="button"
+                    class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    x-show="files.length && !showPreview && !disabledOrReadonly()"
                     x-cloak
-                    @click.stop='clearFiles()'
+                    @click.stop="clearFiles()"
                 >
-                    <x-lucide-x class='h-4 w-4' />
+                    <x-lucide-x class="h-4 w-4" />
                 </button>
             </div>
 
-            <div class='flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground'>
+            <div class="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                 @if($acceptLabel)
-                    <span class='rounded-full bg-muted px-2.5 py-1'>
+                    <span class="rounded-full bg-muted px-2.5 py-1">
                         Allowed: {{ $acceptLabel }}
                     </span>
                 @endif
 
                 @if($maxMb)
-                    <span class='rounded-full bg-muted px-2.5 py-1'>
+                    <span class="rounded-full bg-muted px-2.5 py-1">
                         Max: {{ rtrim(rtrim(number_format((float) $maxMb, 2, '.', ''), '0'), '.') }} MB
                     </span>
                 @endif
 
-                <span class='rounded-full bg-muted px-2.5 py-1'>
+                <span class="rounded-full bg-muted px-2.5 py-1">
                     {{ $multiple ? 'Multiple files allowed' : 'Single file only' }}
                 </span>
             </div>
         </div>
     @endif
 
-    <div x-show='files.length && showPreview' x-cloak class='space-y-3'>
-        <div class='rounded-2xl border border-border bg-background p-3 shadow-sm'>
-            <div class='mb-3 flex items-center justify-between gap-3'>
-                <p class='text-sm font-medium text-foreground'>
-                    Selected file<span x-show='files.length > 1'>s</span>
+    <div x-show="files.length && showPreview" x-cloak class="space-y-3">
+        <div class="rounded-2xl border border-border bg-background p-3 shadow-sm">
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <p class="text-sm font-medium text-foreground">
+                    Selected file<span x-show="files.length > 1">s</span>
                 </p>
 
                 <button
-                    type='button'
-                    @click='clearFiles()'
-                    x-show='files.length && !disabledOrReadonly()'
+                    type="button"
+                    @click="clearFiles()"
+                    x-show="files.length && !disabledOrReadonly()"
                     x-cloak
-                    class='text-xs text-muted-foreground transition hover:text-foreground'
+                    class="text-xs text-muted-foreground transition hover:text-foreground"
                 >
                     Clear all
                 </button>
             </div>
 
-            <div class='space-y-2'>
-                <template x-for='(file, index) in files' :key='file.name + "-" + index'>
-                    <div class='flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5'>
-                        <div class='flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background'>
-                            <template x-if='file.preview'>
-                                <img :src='file.preview' alt='' class='h-full w-full object-cover'>
+            <div class="space-y-2">
+                <template x-for="(file, index) in files" :key="file.id">
+                    <div class="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
+                            <template x-if="file.preview">
+                                <img :src="file.preview" alt="" class="h-full w-full object-cover">
                             </template>
 
-                            <template x-if='!file.preview'>
-                                <div class='text-muted-foreground'>
-                                    <template x-if='fileIcon(file.type, file.name) === "pdf"'>
-                                        <x-lucide-file-text class='h-5 w-5' />
+                            <template x-if="!file.preview">
+                                <div class="text-muted-foreground">
+                                    <template x-if="fileIcon(file.type, file.name) === 'pdf'">
+                                        <x-lucide-file-text class="h-5 w-5" />
                                     </template>
 
-                                    <template x-if='fileIcon(file.type, file.name) === "image"'>
-                                        <x-lucide-image class='h-5 w-5' />
+                                    <template x-if="fileIcon(file.type, file.name) === 'image'">
+                                        <x-lucide-image class="h-5 w-5" />
                                     </template>
 
-                                    <template x-if='fileIcon(file.type, file.name) === "doc"'>
-                                        <x-lucide-file-badge class='h-5 w-5' />
+                                    <template x-if="fileIcon(file.type, file.name) === 'doc'">
+                                        <x-lucide-file-badge class="h-5 w-5" />
                                     </template>
 
-                                    <template x-if='fileIcon(file.type, file.name) === "sheet"'>
-                                        <x-lucide-sheet class='h-5 w-5' />
+                                    <template x-if="fileIcon(file.type, file.name) === 'sheet'">
+                                        <x-lucide-sheet class="h-5 w-5" />
                                     </template>
 
-                                    <template x-if='fileIcon(file.type, file.name) === "file"'>
-                                        <x-lucide-file class='h-5 w-5' />
+                                    <template x-if="fileIcon(file.type, file.name) === 'file'">
+                                        <x-lucide-file class="h-5 w-5" />
                                     </template>
                                 </div>
                             </template>
                         </div>
 
-                        <div class='min-w-0 flex-1'>
-                            <p class='truncate text-sm font-medium text-foreground' x-text='file.name'></p>
-                            <p class='text-xs text-muted-foreground'>
-                                <span x-text='file.type || "Unknown type"'></span>
-                                <span class='mx-1'>•</span>
-                                <span x-text='fileSize(file.size)'></span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-foreground" x-text="file.name"></p>
+                            <p class="text-xs text-muted-foreground">
+                                <span x-text="file.type || 'Unknown type'"></span>
+                                <span class="mx-1">•</span>
+                                <span x-text="fileSize(file.size)"></span>
                             </p>
                         </div>
 
                         <button
-                            type='button'
-                            class='shrink-0 text-muted-foreground transition hover:text-red-500'
-                            @click='removeFile(index)'
-                            x-show='!disabledOrReadonly()'
+                            type="button"
+                            class="shrink-0 text-muted-foreground transition hover:text-red-500"
+                            @click="removeFile(index)"
+                            x-show="!disabledOrReadonly()"
                         >
-                            <x-lucide-x class='h-4 w-4' />
+                            <x-lucide-x class="h-4 w-4" />
                         </button>
                     </div>
                 </template>
@@ -527,28 +555,27 @@
     </div>
 
     <div
-        x-show='!files.length && (showPreview || "{{ $mode }}" === "dropzone")'
+        x-show="!files.length && (showPreview || '{{ $mode }}' === 'dropzone')"
         x-cloak
     >
-        <p class='text-xs text-muted-foreground'>{{ $emptyText }}</p>
+        <p class="text-xs text-muted-foreground">{{ $emptyText }}</p>
     </div>
 
-    {{-- Server-side validation error (Blade-rendered, same as input.blade.php).
-         Hidden by Alpine when files have been picked, so UX clears immediately. --}}
     @if($error)
-        <p class='text-xs text-red-500' x-show='!files.length'>{{ $error }}</p>
+        <p class="text-xs text-red-500" x-show="!errorMessage">
+            {{ $error }}
+        </p>
+    @elseif($success)
+        <p class="text-xs text-emerald-600 dark:text-emerald-400" x-show="!errorMessage">
+            {{ $success }}
+        </p>
+    @elseif($hint)
+        <p class="text-xs text-muted-foreground" x-show="!errorMessage">
+            {{ $hint }}
+        </p>
     @endif
 
-    {{-- Client-side validation error (file size / type), managed entirely by Alpine. --}}
-    <template x-if='errorMessage'>
-        <p class='text-xs text-red-500' x-text='errorMessage'></p>
+    <template x-if="errorMessage">
+        <p class="text-xs text-red-500" x-text="errorMessage"></p>
     </template>
-
-    @if(!$error)
-        @if($success)
-            <p class='text-xs text-emerald-600 dark:text-emerald-400'>{{ $success }}</p>
-        @elseif($hint)
-            <p class='text-xs text-muted-foreground'>{{ $hint }}</p>
-        @endif
-    @endif
 </div>
