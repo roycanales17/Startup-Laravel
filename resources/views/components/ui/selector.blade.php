@@ -49,11 +49,11 @@
     })->values()->all();
 
     $sizeClasses = match ($size) {
-        'xs' => 'min-h-8 text-xs rounded-lg',
-        'sm' => 'min-h-9 text-sm rounded-lg',
-        'lg' => 'min-h-11 text-base rounded-2xl',
-        'xl' => 'min-h-12 text-lg rounded-2xl',
-        default => 'min-h-10 text-sm rounded-xl',
+        'xs' => 'h-8 text-xs rounded-lg',
+        'sm' => 'h-9 text-sm rounded-lg',
+        'lg' => 'h-11 text-base rounded-2xl',
+        'xl' => 'h-12 text-lg rounded-2xl',
+        default => 'h-10 text-sm rounded-xl',
     };
 
     $wrapperPaddingClasses = match ($size) {
@@ -155,7 +155,7 @@
         $stateClasses,
         $disabledClasses,
         $readonlyClasses,
-        $multiple ? "flex flex-wrap items-center gap-2 cursor-text {$multiplePaddingClasses}" : "flex items-center {$wrapperPaddingClasses}",
+        $multiple ? "flex items-center gap-2 overflow-hidden cursor-text {$multiplePaddingClasses}" : "flex items-center {$wrapperPaddingClasses}",
     ]));
 
     $panelClasses = implode(' ', array_filter([
@@ -481,9 +481,9 @@
 
             <div class="min-w-0 flex-1 {{ isset($leading) ? 'pl-7' : '' }}">
                 <template x-if="multiple && selectedOptions.length > 0">
-                    <div class="flex flex-wrap gap-1.5">
+                    <div class="flex flex-nowrap gap-1.5 overflow-x-auto overflow-y-hidden">
                         <template x-for="option in selectedOptions" :key="option.value">
-                            <span class="inline-flex max-w-full items-center gap-1 bg-muted text-foreground {{ $pillClasses }}">
+                            <span class="inline-flex shrink-0 max-w-full items-center gap-1 bg-muted text-foreground {{ $pillClasses }}">
                                 <span class="truncate" x-text="option.label"></span>
 
                                 <button
