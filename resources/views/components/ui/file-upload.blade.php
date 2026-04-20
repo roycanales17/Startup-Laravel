@@ -129,6 +129,7 @@
         multiple: {{ $multiple ? 'true' : 'false' }},
         showPreview: {{ $showPreview ? 'true' : 'false' }},
         errorMessage: null,
+        expandedPreview: null,
 
         get hasAnyError() {
             return !!this.errorMessage;
@@ -229,6 +230,7 @@
             const input = this.$refs.input;
             input.value = '';
             this.errorMessage = null;
+            this.closeExpandedPreview();
             this.cleanupPreviews();
             this.files = [];
             this.dispatchNativeEvents(input);
@@ -315,8 +317,20 @@
 
             return 'file';
         },
+
+        openExpandedPreview(src) {
+            if (!src) return;
+            this.expandedPreview = src;
+            document.body.classList.add('overflow-hidden');
+        },
+
+        closeExpandedPreview() {
+            this.expandedPreview = null;
+            document.body.classList.remove('overflow-hidden');
+        },
     }"
     x-on:beforeunload.window="cleanupPreviews()"
+    x-on:keydown.escape.window="closeExpandedPreview()"
 >
     @if($label)
         <div class="space-y-1">
@@ -503,7 +517,13 @@
                     <div class="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
                         <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
                             <template x-if="file.preview">
-                                <img :src="file.preview" alt="" class="h-full w-full object-cover">
+                                <button
+                                    type="button"
+                                    class="block h-full w-full cursor-zoom-in"
+                                    @click="openExpandedPreview(file.preview)"
+                                >
+                                    <img :src="file.preview" alt="" class="h-full w-full object-cover">
+                                </button>
                             </template>
 
                             <template x-if="!file.preview">
@@ -539,18 +559,37 @@
                                 <span x-text="fileSize(file.size)"></span>
                             </p>
                         </div>
-
-                        <button
-                            type="button"
-                            class="shrink-0 text-muted-foreground transition hover:text-red-500"
-                            @click="removeFile(index)"
-                            x-show="!disabledOrReadonly()"
-                        >
-                            <x-lucide-x class="h-4 w-4" />
-                        </button>
                     </div>
                 </template>
             </div>
+        </div>
+    </div>
+
+    <div
+        x-show="expandedPreview"
+        x-cloak
+        x-transition.opacity.duration.200ms
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+        @click="closeExpandedPreview()"
+    >
+        <div
+            class="relative flex max-h-[90vh] max-w-[95vw] items-center justify-center"
+            @click.stop
+        >
+            <button
+                type="button"
+                class="absolute right-2 top-2 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white shadow-lg transition hover:bg-black/80"
+                @click="closeExpandedPreview()"
+                aria-label="Close image preview"
+            >
+                <x-lucide-x class="h-5 w-5" />
+            </button>
+
+            <img
+                :src="expandedPreview"
+                alt="Expanded preview"
+                class="max-h-[90vh] max-w-[95vw] rounded-2xl bg-background object-contain shadow-2xl"
+            >
         </div>
     </div>
 
