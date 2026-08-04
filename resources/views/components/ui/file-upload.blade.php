@@ -161,6 +161,7 @@
             const input = this.$refs.input;
 
             if (!input || !input.files) {
+                this.closeExpandedPreview();
                 this.cleanupPreviews();
                 this.files = [];
                 this.validateFiles();
@@ -176,6 +177,9 @@
                 preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
             }));
 
+            // Every preview URL is about to be revoked — including the one an open
+            // overlay is displaying, which would leave it showing a dead blob URL.
+            this.closeExpandedPreview();
             this.cleanupPreviews();
             this.files = nextFiles;
             this.validateFiles();
@@ -325,11 +329,24 @@
         },
 
         closeExpandedPreview() {
+            // Only release the scroll lock this component took. Without the guard
+            // every Escape keypress on the page — and every re-sync on init —
+            // would unlock <body>, including a lock some other overlay owns.
+            if (!this.expandedPreview) return;
+
             this.expandedPreview = null;
             document.body.classList.remove('overflow-hidden');
         },
+
+        destroy() {
+            // The scroll lock lives on <body>, outside this component's subtree, so
+            // it would survive an unmount (Livewire re-render, wire:navigate) with
+            // the overlay gone and the page stuck unscrollable.
+            this.closeExpandedPreview();
+        },
     }"
     x-on:beforeunload.window="cleanupPreviews()"
+    x-on:livewire:navigating.window="closeExpandedPreview()"
     x-on:keydown.escape.window="closeExpandedPreview()"
 >
     @if($label)
@@ -559,6 +576,16 @@
                                 <span x-text="fileSize(file.size)"></span>
                             </p>
                         </div>
+
+                        <button
+                            type="button"
+                            class="shrink-0 text-muted-foreground transition hover:text-red-500"
+                            @click="removeFile(index)"
+                            x-show="!disabledOrReadonly()"
+                            aria-label="Remove file"
+                        >
+                            <x-lucide-x class="h-4 w-4" />
+                        </button>
                     </div>
                 </template>
             </div>
@@ -569,7 +596,10 @@
         x-show="expandedPreview"
         x-cloak
         x-transition.opacity.duration.200ms
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+        {{-- mt-0! : this is a later child of the root space-y-2 container, which
+             would otherwise push the fixed backdrop down and leave an unshaded,
+             click-through strip at the top of the viewport. --}}
+        class="fixed inset-0 z-[100] mt-0! flex items-center justify-center bg-black/80 p-4"
         @click="closeExpandedPreview()"
     >
         <div
