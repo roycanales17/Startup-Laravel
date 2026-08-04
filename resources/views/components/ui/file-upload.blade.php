@@ -338,10 +338,12 @@
         },
 
         destroy() {
-            // The scroll lock lives on <body>, outside this component's subtree, so
-            // it would survive an unmount (Livewire re-render, wire:navigate) with
-            // the overlay gone and the page stuck unscrollable.
-            this.closeExpandedPreview();
+            // Two things outlive this component's subtree on unmount (Livewire
+            // re-render, wire:navigate): the <body> scroll lock, which would leave
+            // the page unscrollable, and the preview object URLs, which would leak
+            // for the tab's lifetime — beforeunload fires for neither case.
+            // cleanupPreviews() closes the overlay first, so this covers both.
+            this.cleanupPreviews();
         },
     }"
     x-on:beforeunload.window="cleanupPreviews()"
@@ -595,10 +597,11 @@
         x-show="expandedPreview"
         x-cloak
         x-transition.opacity.duration.200ms
-        {{-- mt-0! : this is a later child of the root space-y-2 container, which
-             would otherwise push the fixed backdrop down and leave an unshaded,
-             click-through strip at the top of the viewport. --}}
-        class="fixed inset-0 z-[100] mt-0! flex items-center justify-center bg-black/80 p-4"
+        {{-- mb-0! : Tailwind v4's space-y-2 puts margin-block-end on :not(:last-child),
+             and this overlay is never the last child. On a fixed inset-0 box that
+             margin shrinks the resolved height, leaving an unshaded, click-through
+             strip at the bottom of the viewport. --}}
+        class="fixed inset-0 z-[100] mb-0! flex items-center justify-center bg-black/80 p-4"
         @click="closeExpandedPreview()"
     >
         <div
