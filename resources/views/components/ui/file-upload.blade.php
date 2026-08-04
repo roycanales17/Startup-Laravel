@@ -150,6 +150,10 @@
         },
 
         cleanupPreviews(files = this.files) {
+            // An open overlay is displaying one of the URLs about to be revoked, so
+            // it has to close first or it ends up rendering a dead blob URL.
+            this.closeExpandedPreview();
+
             files.forEach(file => {
                 if (file.preview) {
                     URL.revokeObjectURL(file.preview);
@@ -161,7 +165,6 @@
             const input = this.$refs.input;
 
             if (!input || !input.files) {
-                this.closeExpandedPreview();
                 this.cleanupPreviews();
                 this.files = [];
                 this.validateFiles();
@@ -177,9 +180,6 @@
                 preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
             }));
 
-            // Every preview URL is about to be revoked — including the one an open
-            // overlay is displaying, which would leave it showing a dead blob URL.
-            this.closeExpandedPreview();
             this.cleanupPreviews();
             this.files = nextFiles;
             this.validateFiles();
@@ -234,7 +234,6 @@
             const input = this.$refs.input;
             input.value = '';
             this.errorMessage = null;
-            this.closeExpandedPreview();
             this.cleanupPreviews();
             this.files = [];
             this.dispatchNativeEvents(input);
